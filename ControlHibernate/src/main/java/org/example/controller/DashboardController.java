@@ -122,23 +122,23 @@ public class DashboardController {
     @FXML
     private void handleMisEstadisticas() {
         System.out.println("🔘 Usuario: Ver mis estadísticas - ID: " + trabajadorActual.getId());
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/trabajador/mis_estadisticas.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.trabajador.MisEstadisticasController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) btnMisEstadisticas.getScene().getWindow();
-            stage.setScene(new Scene(root, 900, 700));
-            stage.setTitle("Control Horario - Mis Estadísticas");
-
-            System.out.println("✅ Vista 'Mis Estadísticas' cargada");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cargar Mis Estadísticas: " + e.getMessage());
-            e.printStackTrace();
-        }
+//        try {
+//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/trabajador/mis_estadisticas.fxml"));
+//            Parent root = loader.load();
+//
+//            org.example.controller.trabajador.MisEstadisticasController controller = loader.getController();
+//            controller.inicializar(trabajadorActual);
+//
+//            Stage stage = (Stage) btnMisEstadisticas.getScene().getWindow();
+//            stage.setScene(new Scene(root, 900, 700));
+//            stage.setTitle("Control Horario - Mis Estadísticas");
+//
+//            System.out.println("✅ Vista 'Mis Estadísticas' cargada");
+//
+//        } catch (IOException e) {
+//            System.err.println("❌ Error al cargar Mis Estadísticas: " + e.getMessage());
+//            e.printStackTrace();
+//        }
     }
 
     @FXML

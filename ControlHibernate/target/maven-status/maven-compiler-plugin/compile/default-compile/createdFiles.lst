@@ -14,7 +14,6 @@ org/example/controller/trabajador/MisFichajesController$4.class
 org/example/dao/TrabajadorDAO.class
 org/example/controller/trabajador/MisFichajesController$6.class
 org/example/model/Trabajador.class
-org/example/controller/trabajador/MisEstadisticasController.class
 org/example/controller/trabajador/MisFichajesController$1.class
 org/example/controller/trabajador/MisDatosController.class
 org/example/model/FilaDiaDTO.class

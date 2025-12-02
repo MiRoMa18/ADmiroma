@@ -1,154 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.chart.*?>
+<?import javafx.scene.text.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.controller.trabajador.MisEstadisticasController"
+            prefHeight="700.0" prefWidth="900.0"
             style="-fx-background-color: #ecf0f1;">
 
-    <!-- Header -->
+    <!-- HEADER -->
     <top>
-        <VBox spacing="15" style="-fx-background-color: #34495e; -fx-padding: 20;">
-
-            <!-- Título -->
-            <Label text="📈 Mis Estadísticas"
-                   style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-
-            <!-- Filtros -->
-            <HBox spacing="15" alignment="CENTER_LEFT">
-                <Label text="Ver estadísticas de:" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
-
-                <ComboBox fx:id="cbFiltro" prefWidth="120" style="-fx-font-size: 14px;"/>
-
-                <Label text="Fecha:" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
-
-                <DatePicker fx:id="dpFecha" prefWidth="150" style="-fx-font-size: 14px;"/>
-
-                <Button fx:id="btnBuscar"
-                        text="🔍 Buscar"
-                        onAction="#handleBuscar"
-                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+        <VBox spacing="10" style="-fx-background-color: #2c3e50; -fx-padding: 20;">
+            <HBox alignment="CENTER_LEFT" spacing="20">
+                <Label text="📊 Mis Estadísticas" textFill="white">
+                    <font>
+                        <Font name="System Bold" size="24"/>
+                    </font>
+                </Label>
             </HBox>
 
+            <!-- FILTROS -->
+            <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 10 0 0 0;">
+                <Label text="Periodo:" textFill="white" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbPeriodo" prefWidth="120" promptText="Selecciona"/>
+
+                <Label text="Fecha:" textFill="white" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <DatePicker fx:id="dpFecha" prefWidth="150"/>
+
+                <Button fx:id="btnBuscar" text="🔍 Buscar" onAction="#handleBuscar"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="btnVolver" text="← Volver" onAction="#handleVolver"
+                        style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold;"/>
+            </HBox>
         </VBox>
     </top>
 
-    <!-- Contenido central -->
+    <!-- CONTENIDO PRINCIPAL -->
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
-            <VBox spacing="20" style="-fx-padding: 30;">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="15" style="-fx-padding: 20;">
 
-                <!-- Tarjetas de estadísticas principales -->
-                <HBox spacing="20" alignment="CENTER">
-
-                    <!-- Total Período -->
-                    <VBox spacing="10" alignment="CENTER"
-                          style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);"
-                          prefWidth="180" prefHeight="140">
-                        <Label text="💼" style="-fx-font-size: 40px;"/>
-                        <Label text="Total Período" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
-                        <Label fx:id="lblTotalMes" text="0.00 h"
-                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+                <!-- TARJETAS DE RESUMEN -->
+                <HBox spacing="15" alignment="CENTER">
+                    <!-- Tarjeta 1: Total Horas -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="200" prefHeight="100"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="⏱️ Total Horas" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
+                        <Label fx:id="lblTotalHoras" text="0.00 h" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                     </VBox>
 
-                    <!-- Promedio Diario -->
-                    <VBox spacing="10" alignment="CENTER"
-                          style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);"
-                          prefWidth="180" prefHeight="140">
-                        <Label text="⏱️" style="-fx-font-size: 40px;"/>
-                        <Label text="Promedio Diario" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
-                        <Label fx:id="lblPromedioDiario" text="0.00 h"
-                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #9b59b6;"/>
+                    <!-- Tarjeta 2: Promedio Diario -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="200" prefHeight="100"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="📊 Promedio Diario" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
+                        <Label fx:id="lblPromedio" text="0.00 h" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
                     </VBox>
 
-                    <!-- Días Trabajados -->
-                    <VBox spacing="10" alignment="CENTER"
-                          style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);"
-                          prefWidth="180" prefHeight="140">
-                        <Label text="📅" style="-fx-font-size: 40px;"/>
-                        <Label text="Días Trabajados" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
-                        <Label fx:id="lblDiasTrabajados" text="0 días"
-                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                    <!-- Tarjeta 3: Días Trabajados -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="200" prefHeight="100"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="📅 Días Trabajados" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
+                        <Label fx:id="lblDiasTrabajados" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
                     </VBox>
 
-                    <!-- Racha Actual -->
-                    <VBox spacing="10" alignment="CENTER"
-                          style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);"
-                          prefWidth="180" prefHeight="140">
-                        <Label text="🔥" style="-fx-font-size: 40px;"/>
-                        <Label text="Racha Actual" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
-                        <Label fx:id="lblRachaActual" text="0 días"
-                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e67e22;"/>
+                    <!-- Tarjeta 4: Día Máximo -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="200" prefHeight="100"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="🔥 Día Máximo" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
+                        <Label fx:id="lblDiaMaximo" text="0.00 h" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
                     </VBox>
-
                 </HBox>
 
-                <!-- Gráfico de barras: Horas por día de la semana -->
-                <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
-                    <Label text="📊 Distribución por Día de la Semana"
-                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                    <BarChart fx:id="chartPorDia"
-                              prefHeight="400"
-                              minHeight="400"
-                              animated="true"
-                              legendVisible="false"
-                              verticalGridLinesVisible="true"
-                              horizontalGridLinesVisible="true">
-                        <xAxis>
-                            <CategoryAxis side="BOTTOM"
-                                          tickLabelRotation="0"
-                                          tickLabelGap="5"
-                                          tickLabelFill="#2c3e50"/>
-                        </xAxis>
-                        <yAxis>
-                            <NumberAxis side="LEFT"
-                                        tickLabelGap="5"
-                                        minorTickVisible="true"
-                                        minorTickCount="4"
-                                        tickLabelFill="#2c3e50"/>
-                        </yAxis>
-                    </BarChart>
-                </VBox>
+                <!-- GRÁFICOS -->
+                <HBox spacing="15">
+                    <!-- Gráfico de Barras: Horas por Día -->
+                    <VBox spacing="10" HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="📈 Evolución Diaria" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <BarChart fx:id="chartBarras" prefHeight="300" legendVisible="false">
+                            <xAxis>
+                                <CategoryAxis label="Fecha" side="BOTTOM"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Horas" side="LEFT" autoRanging="true"/>
+                            </yAxis>
+                        </BarChart>
+                    </VBox>
 
-                <!-- Gráfico de líneas: Evolución -->
-                <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);">
-                    <Label text="📈 Evolución del Período"
-                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-                    <LineChart fx:id="chartEvolucion"
-                               prefHeight="400"
-                               minHeight="400"
-                               animated="true"
-                               legendVisible="false"
-                               createSymbols="true"
-                               verticalGridLinesVisible="true"
-                               horizontalGridLinesVisible="true">
-                        <xAxis>
-                            <CategoryAxis side="BOTTOM"
-                                          tickLabelRotation="45"
-                                          tickLabelGap="5"
-                                          tickLabelFill="#2c3e50"/>
-                        </xAxis>
-                        <yAxis>
-                            <NumberAxis side="LEFT"
-                                        tickLabelGap="5"
-                                        minorTickVisible="true"
-                                        minorTickCount="4"
-                                        tickLabelFill="#2c3e50"/>
-                        </yAxis>
-                    </LineChart>
-                </VBox>
-
-                <!-- Botón volver -->
-                <HBox alignment="CENTER" style="-fx-padding: 20 0 40 0;">
-                    <Button fx:id="btnVolver"
-                            text="⬅️ Volver al Dashboard"
-                            onAction="#handleVolver"
-                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;"/>
+                    <!-- Gráfico Circular: Distribución por Día de la Semana -->
+                    <VBox spacing="10" prefWidth="350"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="🍕 Distribución Semanal" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <PieChart fx:id="chartPie" prefHeight="300" legendSide="BOTTOM"/>
+                    </VBox>
                 </HBox>
+
+                <!-- TABLA DETALLADA -->
+                <VBox spacing="10"
+                      style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <Label text="📋 Detalle por Día" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+                    <TableView fx:id="tableEstadisticas" prefHeight="250">
+                        <columns>
+                            <TableColumn fx:id="colFecha" text="Fecha" prefWidth="120"/>
+                            <TableColumn fx:id="colDiaSemana" text="Día" prefWidth="100"/>
+                            <TableColumn fx:id="colEntrada" text="Primera Entrada" prefWidth="120"/>
+                            <TableColumn fx:id="colSalida" text="Última Salida" prefWidth="120"/>
+                            <TableColumn fx:id="colHoras" text="Total Horas" prefWidth="100"/>
+                            <TableColumn fx:id="colClima" text="Clima" prefWidth="120"/>
+                            <TableColumn fx:id="colEstado" text="Estado" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                </VBox>
 
             </VBox>
         </ScrollPane>
