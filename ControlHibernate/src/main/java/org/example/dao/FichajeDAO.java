@@ -40,11 +40,4 @@ public class FichajeDAO {
             return List.of();
         }
     }
-
-    /**
-     * Buscar fichajes de un trabajador en un día específico
-     */
-    public List<Fichaje> buscarPorTrabajadorYFecha(int trabajadorId, LocalDate fecha) {
-        return buscarPorTrabajadorYRango(trabajadorId, fecha, fecha);
-    }
 }

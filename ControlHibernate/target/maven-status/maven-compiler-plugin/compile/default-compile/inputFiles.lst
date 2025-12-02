@@ -3,12 +3,12 @@
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/DashboardController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/LoginController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/trabajador/MisDatosController.java
+/Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/trabajador/MisEstadisticasController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/trabajador/MisFichajesController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/dao/FichajeDAO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/dao/TrabajadorDAO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/Fichaje.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/FichajeDetalleDTO.java
-/Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/FilaDiaDTO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/Rol.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/TipoFichaje.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/Trabajador.java

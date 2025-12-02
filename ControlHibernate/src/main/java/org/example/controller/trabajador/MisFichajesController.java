@@ -216,7 +216,7 @@ public class MisFichajesController {
             }
         });
 
-        // Formatear horas
+        // Formatear horas con formato "Xh Ym"
         colHorasSegmento.setCellFactory(col -> new TableCell<FichajeDetalleDTO, Double>() {
             @Override
             protected void updateItem(Double horas, boolean empty) {
@@ -232,11 +232,11 @@ public class MisFichajesController {
                             setText("INCOMPLETO");
                             setStyle("-fx-background-color: #ffcccc; -fx-text-fill: #c0392b; -fx-font-weight: bold;");
                         } else {
-                            setText(String.format("%.2f h", horas));
+                            setText(formatearHoras(horas));
                             setStyle("-fx-background-color: #d5f4e6; -fx-text-fill: #27ae60; -fx-font-weight: bold; -fx-font-size: 14px;");
                         }
                     } else if (fila.getTipo().equals("SALIDA")) {
-                        setText(String.format("%.2f h", horas));
+                        setText(formatearHoras(horas));
                         setStyle("-fx-text-fill: #3498db; -fx-font-weight: bold;");
                     } else {
                         setText("");
@@ -365,15 +365,36 @@ public class MisFichajesController {
         // Actualizar tabla
         tableFichajes.setItems(filas);
 
-        // Actualizar estadísticas
-        lblTotalPeriodo.setText(String.format("%.2f h", totalGeneralHoras));
+        // Actualizar estadísticas con nuevo formato
+        lblTotalPeriodo.setText(formatearHoras(totalGeneralHoras));
         lblDiasTrabajados.setText(diasTrabajados + " días");
 
         if (diasTrabajados > 0) {
             double promedio = totalGeneralHoras / diasTrabajados;
-            lblPromedioDiario.setText(String.format("%.2f h", promedio));
+            lblPromedioDiario.setText(formatearHoras(promedio));
         } else {
-            lblPromedioDiario.setText("0.00 h");
+            lblPromedioDiario.setText("0h");
+        }
+    }
+
+    /**
+     * Convierte horas decimales a formato "Xh Ym"
+     * Ejemplo: 8.92 → "8h 55m"
+     */
+    private String formatearHoras(double horasDecimal) {
+        int horas = (int) horasDecimal;
+        int minutos = (int) Math.round((horasDecimal - horas) * 60);
+
+        // Si los minutos son 60, ajustar a la siguiente hora
+        if (minutos == 60) {
+            horas++;
+            minutos = 0;
+        }
+
+        if (minutos == 0) {
+            return horas + "h";
+        } else {
+            return horas + "h " + minutos + "m";
         }
     }
 
