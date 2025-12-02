@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.controller.trabajador.MisDatosController"
+            style="-fx-background-color: #ecf0f1;">
+
+    <!-- Header -->
+    <top>
+        <VBox alignment="CENTER" spacing="10" style="-fx-background-color: #34495e; -fx-padding: 25;">
+            <Label text="🆔 Mis Datos Personales"
+                   style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Label text="Información de tu cuenta"
+                   style="-fx-font-size: 14px; -fx-text-fill: #bdc3c7;"/>
+        </VBox>
+    </top>
+
+    <!-- Contenido central CON SCROLL -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox alignment="CENTER" spacing="20" style="-fx-padding: 40;">
+
+                <!-- Tarjeta con datos -->
+                <VBox spacing="20" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 40; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 3);" maxWidth="500">
+
+                    <!-- Nombre -->
+                    <VBox spacing="8">
+                        <Label text="Nombre Completo" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblNombreCompleto" text="Juan García Pérez"
+                               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    </VBox>
+
+                    <Separator/>
+
+                    <!-- Número de Tarjeta -->
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Número de Tarjeta" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                            <Label fx:id="lblNumeroTarjeta" text="1001"
+                                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #3498db; -fx-font-family: 'Courier New';"/>
+                        </VBox>
+                        <Label text="🎫" style="-fx-font-size: 40px;"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <!-- PIN -->
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="PIN" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                            <Label fx:id="lblPin" text="1234"
+                                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-family: 'Courier New';"/>
+                        </VBox>
+                        <Label text="🔐" style="-fx-font-size: 40px;"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <!-- Email -->
+                    <VBox spacing="8">
+                        <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblEmail" text="juan.garcia@empresa.com"
+                               style="-fx-font-size: 16px; -fx-text-fill: #34495e;"/>
+                    </VBox>
+
+                    <Separator/>
+
+                    <!-- Rol y Fecha Alta -->
+                    <HBox spacing="30">
+                        <VBox spacing="8" HBox.hgrow="ALWAYS">
+                            <Label text="Rol" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                            <Label fx:id="lblRol" text="TRABAJADOR"
+                                   style="-fx-font-size: 16px; -fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+                        </VBox>
+
+                        <VBox spacing="8" HBox.hgrow="ALWAYS">
+                            <Label text="Fecha de Alta" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                            <Label fx:id="lblFechaAlta" text="10/01/2023"
+                                   style="-fx-font-size: 16px; -fx-text-fill: #34495e;"/>
+                        </VBox>
+                    </HBox>
+
+                </VBox>
+
+                <!-- Información adicional -->
+                <VBox alignment="CENTER" spacing="10" style="-fx-background-color: #fff3cd; -fx-background-radius: 10; -fx-padding: 15; -fx-border-color: #ffc107; -fx-border-radius: 10; -fx-border-width: 2;" maxWidth="500">
+                    <Label text="⚠️ Importante" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #856404;"/>
+                    <Label text="Mantén tu número de tarjeta y PIN seguros. No los compartas con nadie."
+                           wrapText="true"
+                           textAlignment="CENTER"
+                           style="-fx-font-size: 12px; -fx-text-fill: #856404;"/>
+                </VBox>
+
+                <!-- Botón volver (AHORA DENTRO DEL SCROLL) -->
+                <HBox alignment="CENTER" style="-fx-padding: 20 0 40 0;">
+                    <Button fx:id="btnVolver"
+                            text="⬅️ Volver al Dashboard"
+                            onAction="#handleVolver"
+                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;"/>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.controller.LoginController"
+      alignment="CENTER"
+      spacing="20"
+      style="-fx-background-color: #f0f0f0;">
+
+    <padding>
+        <Insets top="50" right="50" bottom="50" left="50"/>
+    </padding>
+
+    <!-- Panel de login -->
+    <VBox alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 2);">
+        <padding>
+            <Insets top="40" right="40" bottom="40" left="40"/>
+        </padding>
+
+        <!-- Título -->
+        <Label text="Control Horario" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Label text="Iniciar Sesión" style="-fx-font-size: 16px; -fx-text-fill: #7f8c8d;"/>
+
+        <!-- Separador -->
+        <Separator prefWidth="300">
+            <VBox.margin>
+                <Insets top="10" bottom="10"/>
+            </VBox.margin>
+        </Separator>
+
+        <!-- Formulario -->
+        <VBox spacing="15" prefWidth="300">
+
+            <!-- Número de tarjeta -->
+            <VBox spacing="5">
+                <Label text="Número de Tarjeta:" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="txtNumeroTarjeta"
+                           promptText="Ej: 1001"
+                           style="-fx-font-size: 14px; -fx-padding: 10;"/>
+            </VBox>
+
+            <!-- PIN -->
+            <VBox spacing="5">
+                <Label text="PIN:" style="-fx-font-weight: bold;"/>
+                <PasswordField fx:id="txtPin"
+                               promptText="Ingresa tu PIN"
+                               style="-fx-font-size: 14px; -fx-padding: 10;"/>
+            </VBox>
+
+            <!-- Botón Login -->
+            <Button fx:id="btnLogin"
+                    text="Iniciar Sesión"
+                    onAction="#handleLogin"
+                    defaultButton="true"
+                    prefWidth="300"
+                    style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 12; -fx-cursor: hand;">
+                <VBox.margin>
+                    <Insets top="10"/>
+                </VBox.margin>
+            </Button>
+
+            <!-- Mensaje de error/éxito -->
+            <Label fx:id="lblMensaje"
+                   wrapText="true"
+                   alignment="CENTER"
+                   prefWidth="300"
+                   minHeight="40"
+                   style="-fx-font-size: 14px;">
+            </Label>
+
+        </VBox>
+    </VBox>
+
+</VBox>
