@@ -1,13 +1,16 @@
 package org.example.controller;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.example.controller.trabajador.FicharController;
 import org.example.model.Rol;
 import org.example.model.Trabajador;
 
@@ -166,10 +169,21 @@ public class DashboardController {
     }
 
     @FXML
-    private void handleFichar() {
-        System.out.println("🔘 Usuario: Fichar - ID: " + trabajadorActual.getId());
-        // TODO: Cargar vista fichar
-        mostrarMensajeTemporal("Pantalla de Fichaje (próximamente)");
+    private void handleFichar(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/trabajador/fichar.fxml"));
+            Parent root = loader.load();
+
+            FicharController controller = loader.getController();
+            controller.inicializar(trabajadorActual);
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root, 800, 600));
+            stage.setTitle("Control Horario - Fichar");
+        } catch (IOException e) {
+            System.err.println("❌ Error al abrir Fichar: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML

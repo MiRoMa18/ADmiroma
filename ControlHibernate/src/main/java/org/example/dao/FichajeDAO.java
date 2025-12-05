@@ -8,6 +8,7 @@ import org.hibernate.query.Query;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public class FichajeDAO {
 
@@ -38,6 +39,34 @@ public class FichajeDAO {
             System.err.println("   💥 ERROR en FichajeDAO.buscarPorTrabajadorYRango(): " + e.getMessage());
             e.printStackTrace();
             return List.of();
+        }
+    }
+
+    public Optional<Fichaje> obtenerUltimoFichaje(Integer trabajadorId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM Fichaje f WHERE f.trabajador.id = :id ORDER BY f.fechaHora DESC";
+            Query<Fichaje> q = session.createQuery(hql, Fichaje.class);
+            q.setParameter("id", trabajadorId);
+            q.setMaxResults(1);
+            return q.uniqueResultOptional();
+        } catch (Exception e) {
+            System.err.println("   💥 ERROR en FichajeDAO.obtenerUltimoFichaje(): " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+
+    // Método para guardar un fichaje
+    public boolean guardar(Fichaje fichaje) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            var tx = session.beginTransaction();
+            session.persist(fichaje);
+            tx.commit();
+            return true;
+        } catch (Exception e) {
+            System.err.println("   💥 ERROR en FichajeDAO.guardar(): " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 }
