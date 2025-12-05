@@ -87,8 +87,23 @@ public class DashboardController {
     @FXML
     private void handleEstadisticasGlobales() {
         System.out.println("🔘 Admin: Ver estadísticas globales");
-        // TODO: Cargar vista estadísticas globales
-        mostrarMensajeTemporal("Estadísticas Globales (próximamente)");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/estadisticas_globales.fxml"));
+            Parent root = loader.load();
+
+            org.example.controller.admin.EstadisticasGlobalesController controller = loader.getController();
+            controller.inicializar(trabajadorActual);
+
+            Stage stage = (Stage) btnEstadisticasGlobales.getScene().getWindow();
+            stage.setScene(new Scene(root, 1000, 750));
+            stage.setTitle("Control Horario - Estadísticas Globales");
+
+            System.out.println("✅ Vista 'Estadísticas Globales' cargada");
+
+        } catch (IOException e) {
+            System.err.println("❌ Error al cargar Estadísticas Globales: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML

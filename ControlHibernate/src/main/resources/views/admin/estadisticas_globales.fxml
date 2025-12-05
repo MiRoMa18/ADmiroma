@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.controller.admin.EstadisticasGlobalesController"
+            style="-fx-background-color: #ecf0f1;">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="15" style="-fx-background-color: #34495e; -fx-padding: 20;">
+            
+            <!-- Título -->
+            <Label text="📊 Estadísticas Globales - Panel Administrador"
+                   style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+
+            <!-- Filtros -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="Mes:" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbMes" prefWidth="140" style="-fx-font-size: 14px;"/>
+
+                <Label text="Año:" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbAnio" prefWidth="100" style="-fx-font-size: 14px;"/>
+
+                <Button fx:id="btnBuscar"
+                        text="🔍 Buscar"
+                        onAction="#handleBuscar"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="btnVolver"
+                        text="⬅️ Volver al Dashboard"
+                        onAction="#handleVolver"
+                        style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="20" style="-fx-padding: 20;">
+
+                <!-- ============================================ -->
+                <!-- TARJETAS DE RESUMEN -->
+                <!-- ============================================ -->
+                <HBox spacing="15" alignment="CENTER">
+                    
+                    <!-- Total Horas -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="220" prefHeight="110"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="⏱️ Total Horas del Equipo" style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblTotalHoras" text="0h" 
+                               style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Label text="(Todo el equipo)" style="-fx-font-size: 11px; -fx-text-fill: #95a5a6;"/>
+                    </VBox>
+
+                    <!-- Empleados Activos -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="220" prefHeight="110"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="👥 Empleados Activos" style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblEmpleadosActivos" text="0" 
+                               style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                        <Label text="(Ficharon en período)" style="-fx-font-size: 11px; -fx-text-fill: #95a5a6;"/>
+                    </VBox>
+
+                    <!-- Promedio por Empleado -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="220" prefHeight="110"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="📊 Promedio por Empleado" style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblPromedioEmpleado" text="0h" 
+                               style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+                        <Label text="(Media del equipo)" style="-fx-font-size: 11px; -fx-text-fill: #95a5a6;"/>
+                    </VBox>
+
+                    <!-- Mejor Empleado -->
+                    <VBox alignment="CENTER" spacing="5" prefWidth="220" prefHeight="110"
+                          style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                        <Label text="🏆 Empleado Más Productivo" style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblMejorEmpleado" text="N/A" 
+                               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #f39c12; -fx-wrap-text: true; -fx-text-alignment: center;" 
+                               wrapText="true" maxWidth="200"/>
+                    </VBox>
+                    
+                </HBox>
+
+                <!-- ============================================ -->
+                <!-- GRÁFICO DE COMPARATIVA -->
+                <!-- ============================================ -->
+                <VBox spacing="10"
+                      style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <Label text="📈 Comparativa de Empleados (Top 10)" 
+                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                    <Label text="Horas trabajadas ordenadas de mayor a menor" 
+                           style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+                    
+                    <BarChart fx:id="chartComparativa" prefHeight="350" legendVisible="false">
+                        <xAxis>
+                            <CategoryAxis fx:id="xAxisEmpleados" label="Empleado" side="BOTTOM"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis fx:id="yAxisHoras" label="Horas" side="LEFT" autoRanging="true"/>
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+
+                <!-- ============================================ -->
+                <!-- TABLA DETALLADA -->
+                <!-- ============================================ -->
+                <VBox spacing="10"
+                      style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="📋 Detalle por Empleado" 
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="✅ = Rendimiento normal  |  ⚠️ = Por debajo del promedio  |  ❌ = Inactivo/Muy bajo" 
+                               style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+                    </HBox>
+                    
+                    <TableView fx:id="tableEstadisticas" prefHeight="400">
+                        <columns>
+                            <TableColumn fx:id="colNombre" text="Nombre Completo" prefWidth="180"/>
+                            <TableColumn fx:id="colTarjeta" text="Tarjeta" prefWidth="80"/>
+                            <TableColumn fx:id="colDias" text="Días Trabajados" prefWidth="120"/>
+                            <TableColumn fx:id="colTotalHoras" text="Total Horas" prefWidth="110"/>
+                            <TableColumn fx:id="colPromedio" text="Promedio/Día" prefWidth="110"/>
+                            <TableColumn fx:id="colIncompletos" text="Fichajes Incompletos" prefWidth="140"/>
+                            <TableColumn fx:id="colEstado" text="Estado" prefWidth="120"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

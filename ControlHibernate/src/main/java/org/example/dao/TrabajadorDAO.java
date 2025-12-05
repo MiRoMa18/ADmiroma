@@ -5,6 +5,7 @@ import org.example.model.Trabajador;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public class TrabajadorDAO {
@@ -27,6 +28,27 @@ public class TrabajadorDAO {
             System.err.println("   💥 ERROR en TrabajadorDAO.autenticar(): " + e.getMessage());
             e.printStackTrace();
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Obtener todos los trabajadores ordenados por nombre
+     */
+    public List<Trabajador> obtenerTodos() {
+        System.out.println("🗄️  TrabajadorDAO.obtenerTodos()");
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM Trabajador t ORDER BY t.nombre ASC";
+            Query<Trabajador> query = session.createQuery(hql, Trabajador.class);
+            List<Trabajador> resultado = query.list();
+
+            System.out.println("   ✅ Encontrados " + resultado.size() + " trabajadores");
+            return resultado;
+
+        } catch (Exception e) {
+            System.err.println("   💥 ERROR en TrabajadorDAO.obtenerTodos(): " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
         }
     }
 }
