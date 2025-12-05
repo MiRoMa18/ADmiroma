@@ -11,7 +11,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import org.example.dao.FichajeDAO;
 import org.example.model.Fichaje;
-import org.example.model.FichajeDetalleDTO;
+import org.example.model.FichajeDiaDTO;
 import org.example.model.Trabajador;
 
 import java.io.IOException;
@@ -26,47 +26,31 @@ import java.util.*;
 
 public class MisFichajesController {
 
-    @FXML
-    private ComboBox<String> cbFiltro;
+    @FXML private ComboBox<String> cbFiltro;
+    @FXML private DatePicker dpFecha;
+    @FXML private Button btnBuscar;
+    @FXML private TableView<FichajeDiaDTO> tableFichajes;
 
-    @FXML
-    private DatePicker dpFecha;
+    // Columnas
+    @FXML private TableColumn<FichajeDiaDTO, LocalDate> colFecha;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colEntrada1;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colSalida1;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colEntrada2;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colSalida2;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colEntrada3;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colSalida3;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colEntrada4;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colSalida4;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colEntrada5;
+    @FXML private TableColumn<FichajeDiaDTO, LocalTime> colSalida5;
+    @FXML private TableColumn<FichajeDiaDTO, String> colNotas;
+    @FXML private TableColumn<FichajeDiaDTO, String> colClima;
+    @FXML private TableColumn<FichajeDiaDTO, Double> colHoras;
 
-    @FXML
-    private Button btnBuscar;
-
-    @FXML
-    private TableView<FichajeDetalleDTO> tableFichajes;
-
-    @FXML
-    private TableColumn<FichajeDetalleDTO, LocalDate> colFecha;
-
-    @FXML
-    private TableColumn<FichajeDetalleDTO, LocalTime> colHora;
-
-    @FXML
-    private TableColumn<FichajeDetalleDTO, String> colTipo;
-
-    @FXML
-    private TableColumn<FichajeDetalleDTO, String> colNotas;
-
-    @FXML
-    private TableColumn<FichajeDetalleDTO, String> colClima;
-
-    @FXML
-    private TableColumn<FichajeDetalleDTO, Double> colHorasSegmento;
-
-    @FXML
-    private Label lblTotalPeriodo;
-
-    @FXML
-    private Label lblPromedioDiario;
-
-    @FXML
-    private Label lblDiasTrabajados;
-
-    @FXML
-    private Button btnVolver;
+    @FXML private Label lblTotalPeriodo;
+    @FXML private Label lblPromedioDiario;
+    @FXML private Label lblDiasTrabajados;
+    @FXML private Button btnVolver;
 
     private Trabajador trabajadorActual;
     private FichajeDAO fichajeDAO = new FichajeDAO();
@@ -74,17 +58,11 @@ public class MisFichajesController {
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
 
-        // Configurar ComboBox de filtros
         cbFiltro.setItems(FXCollections.observableArrayList("Día", "Semana", "Mes"));
         cbFiltro.setValue("Mes");
-
-        // Configurar DatePicker con fecha actual
         dpFecha.setValue(LocalDate.now());
 
-        // Configurar columnas de la tabla
         configurarTabla();
-
-        // Cargar datos iniciales
         cargarDatos();
 
         System.out.println("✅ Vista 'Mis Fichajes' cargada para: " + trabajador.getNombre());
@@ -92,45 +70,86 @@ public class MisFichajesController {
 
     private void configurarTabla() {
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
-        colHora.setCellValueFactory(new PropertyValueFactory<>("hora"));
-        colTipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
+        colEntrada1.setCellValueFactory(new PropertyValueFactory<>("entrada1"));
+        colSalida1.setCellValueFactory(new PropertyValueFactory<>("salida1"));
+        colEntrada2.setCellValueFactory(new PropertyValueFactory<>("entrada2"));
+        colSalida2.setCellValueFactory(new PropertyValueFactory<>("salida2"));
+        colEntrada3.setCellValueFactory(new PropertyValueFactory<>("entrada3"));
+        colSalida3.setCellValueFactory(new PropertyValueFactory<>("salida3"));
+        colEntrada4.setCellValueFactory(new PropertyValueFactory<>("entrada4"));
+        colSalida4.setCellValueFactory(new PropertyValueFactory<>("salida4"));
+        colEntrada5.setCellValueFactory(new PropertyValueFactory<>("entrada5"));
+        colSalida5.setCellValueFactory(new PropertyValueFactory<>("salida5"));
         colNotas.setCellValueFactory(new PropertyValueFactory<>("notas"));
         colClima.setCellValueFactory(new PropertyValueFactory<>("clima"));
-        colHorasSegmento.setCellValueFactory(new PropertyValueFactory<>("horasSegmento"));
+        colHoras.setCellValueFactory(new PropertyValueFactory<>("horasTotales"));
 
-        // Formatear fecha (solo mostrar en primera fila del día)
-        colFecha.setCellFactory(col -> new TableCell<FichajeDetalleDTO, LocalDate>() {
+        // Formatear fecha
+        colFecha.setCellFactory(col -> new TableCell<FichajeDiaDTO, LocalDate>() {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            private LocalDate ultimaFecha = null;
-
             @Override
             protected void updateItem(LocalDate fecha, boolean empty) {
                 super.updateItem(fecha, empty);
-                if (empty || fecha == null) {
+                setText(empty || fecha == null ? null : fecha.format(formatter));
+            }
+        });
+
+        // Formatear horas (entrada/salida)
+        formatearColumnaHora(colEntrada1);
+        formatearColumnaHora(colSalida1);
+        formatearColumnaHora(colEntrada2);
+        formatearColumnaHora(colSalida2);
+        formatearColumnaHora(colEntrada3);
+        formatearColumnaHora(colSalida3);
+        formatearColumnaHora(colEntrada4);
+        formatearColumnaHora(colSalida4);
+        formatearColumnaHora(colEntrada5);
+        formatearColumnaHora(colSalida5);
+
+        // Formatear total horas
+        colHoras.setCellFactory(col -> new TableCell<FichajeDiaDTO, Double>() {
+            @Override
+            protected void updateItem(Double horas, boolean empty) {
+                super.updateItem(horas, empty);
+                if (empty || horas == null || horas == 0) {
                     setText(null);
                     setStyle("");
                 } else {
-                    FichajeDetalleDTO fila = getTableView().getItems().get(getIndex());
-
-                    if (fila.isEsResumenDia()) {
-                        setText("");
-                        setStyle("-fx-background-color: #ecf0f1; -fx-font-weight: bold;");
-                    } else if (!fecha.equals(ultimaFecha)) {
-                        setText(fecha.format(formatter));
-                        ultimaFecha = fecha;
-                        setStyle("");
-                    } else {
-                        setText("");
-                        setStyle("");
-                    }
+                    setText(formatearHoras(horas));
+                    setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
                 }
             }
         });
 
-        // Formatear hora
-        colHora.setCellFactory(col -> new TableCell<FichajeDetalleDTO, LocalTime>() {
-            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        // Formatear notas
+        colNotas.setCellFactory(col -> new TableCell<FichajeDiaDTO, String>() {
+            @Override
+            protected void updateItem(String notas, boolean empty) {
+                super.updateItem(notas, empty);
+                if (empty || notas == null || notas.isEmpty()) {
+                    setText(null);
+                } else {
+                    String texto = notas.length() > 30 ? notas.substring(0, 27) + "..." : notas;
+                    setText(texto);
+                    setStyle("-fx-font-style: italic; -fx-text-fill: #7f8c8d;");
+                }
+            }
+        });
 
+        // Formatear clima
+        colClima.setCellFactory(col -> new TableCell<FichajeDiaDTO, String>() {
+            @Override
+            protected void updateItem(String clima, boolean empty) {
+                super.updateItem(clima, empty);
+                setText(empty || clima == null ? "" : clima);
+                setStyle("-fx-font-style: italic; -fx-text-fill: #3498db;");
+            }
+        });
+    }
+
+    private void formatearColumnaHora(TableColumn<FichajeDiaDTO, LocalTime> columna) {
+        columna.setCellFactory(col -> new TableCell<FichajeDiaDTO, LocalTime>() {
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
             @Override
             protected void updateItem(LocalTime hora, boolean empty) {
                 super.updateItem(hora, empty);
@@ -138,109 +157,12 @@ public class MisFichajesController {
                     setText(null);
                     setStyle("");
                 } else {
-                    FichajeDetalleDTO fila = getTableView().getItems().get(getIndex());
-                    if (fila.isEsResumenDia()) {
-                        setText("");
-                        setStyle("-fx-background-color: #ecf0f1;");
-                    } else {
-                        setText(hora.format(formatter));
-                        setStyle("");
-                    }
-                }
-            }
-        });
-
-        // Formatear tipo (con emojis)
-        colTipo.setCellFactory(col -> new TableCell<FichajeDetalleDTO, String>() {
-            @Override
-            protected void updateItem(String tipo, boolean empty) {
-                super.updateItem(tipo, empty);
-                if (empty || tipo == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    FichajeDetalleDTO fila = getTableView().getItems().get(getIndex());
-                    if (fila.isEsResumenDia()) {
-                        setText("");
-                        setStyle("-fx-background-color: #ecf0f1;");
-                    } else if (tipo.equals("ENTRADA")) {
-                        setText("⬇️ Entrada");
+                    setText(hora.format(formatter));
+                    // Verde para entradas, rojo para salidas
+                    if (getTableColumn().getText().contains("Entrada")) {
                         setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
                     } else {
-                        setText("⬆️ Salida");
                         setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    }
-                }
-            }
-        });
-
-        // Formatear notas
-        colNotas.setCellFactory(col -> new TableCell<FichajeDetalleDTO, String>() {
-            @Override
-            protected void updateItem(String notas, boolean empty) {
-                super.updateItem(notas, empty);
-                if (empty) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    FichajeDetalleDTO fila = getTableView().getItems().get(getIndex());
-                    if (fila.isEsResumenDia()) {
-                        setText("");
-                        setStyle("-fx-background-color: #ecf0f1;");
-                    } else {
-                        setText(notas != null ? notas : "");
-                        setStyle("-fx-font-style: italic; -fx-text-fill: #7f8c8d;");
-                    }
-                }
-            }
-        });
-
-        // Formatear clima
-        colClima.setCellFactory(col -> new TableCell<FichajeDetalleDTO, String>() {
-            @Override
-            protected void updateItem(String clima, boolean empty) {
-                super.updateItem(clima, empty);
-                if (empty || clima == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    FichajeDetalleDTO fila = getTableView().getItems().get(getIndex());
-                    if (fila.isEsResumenDia()) {
-                        setText("TOTAL DÍA");
-                        setStyle("-fx-background-color: #ecf0f1; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-                    } else {
-                        setText(clima);
-                        setStyle("");
-                    }
-                }
-            }
-        });
-
-        // Formatear horas con formato "Xh Ym"
-        colHorasSegmento.setCellFactory(col -> new TableCell<FichajeDetalleDTO, Double>() {
-            @Override
-            protected void updateItem(Double horas, boolean empty) {
-                super.updateItem(horas, empty);
-                if (empty || horas == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    FichajeDetalleDTO fila = getTableView().getItems().get(getIndex());
-
-                    if (fila.isEsResumenDia()) {
-                        if (horas == -1.0) {
-                            setText("INCOMPLETO");
-                            setStyle("-fx-background-color: #ffcccc; -fx-text-fill: #c0392b; -fx-font-weight: bold;");
-                        } else {
-                            setText(formatearHoras(horas));
-                            setStyle("-fx-background-color: #d5f4e6; -fx-text-fill: #27ae60; -fx-font-weight: bold; -fx-font-size: 14px;");
-                        }
-                    } else if (fila.getTipo().equals("SALIDA")) {
-                        setText(formatearHoras(horas));
-                        setStyle("-fx-text-fill: #3498db; -fx-font-weight: bold;");
-                    } else {
-                        setText("");
-                        setStyle("");
                     }
                 }
             }
@@ -261,40 +183,28 @@ public class MisFichajesController {
             return;
         }
 
-        System.out.println("🔍 Cargando fichajes - Filtro: " + filtro + ", Fecha: " + fechaSeleccionada);
-
-        // Calcular rango de fechas según filtro
-        LocalDate fechaInicio;
-        LocalDate fechaFin;
-
+        // Calcular rango
+        LocalDate fechaInicio, fechaFin;
         switch (filtro) {
             case "Día":
                 fechaInicio = fechaSeleccionada;
                 fechaFin = fechaSeleccionada;
                 break;
-
             case "Semana":
                 fechaInicio = fechaSeleccionada.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
                 fechaFin = fechaSeleccionada.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
                 break;
-
             case "Mes":
                 fechaInicio = fechaSeleccionada.withDayOfMonth(1);
                 fechaFin = fechaSeleccionada.with(TemporalAdjusters.lastDayOfMonth());
                 break;
-
             default:
                 fechaInicio = fechaSeleccionada;
                 fechaFin = fechaSeleccionada;
         }
 
-        System.out.println("   Rango calculado: " + fechaInicio + " a " + fechaFin);
-
-        // Obtener fichajes de la BD
         List<Fichaje> fichajes = fichajeDAO.buscarPorTrabajadorYRango(
-                trabajadorActual.getId(),
-                fechaInicio,
-                fechaFin
+                trabajadorActual.getId(), fechaInicio, fechaFin
         );
 
         // Agrupar por día
@@ -304,12 +214,11 @@ public class MisFichajesController {
             fichajesPorDia.computeIfAbsent(fecha, k -> new ArrayList<>()).add(f);
         }
 
-        // Crear filas detalladas
-        ObservableList<FichajeDetalleDTO> filas = FXCollections.observableArrayList();
+        // Crear filas agrupadas por día
+        ObservableList<FichajeDiaDTO> filas = FXCollections.observableArrayList();
         double totalGeneralHoras = 0.0;
         int diasTrabajados = 0;
 
-        // Ordenar fechas descendentes
         List<LocalDate> fechasOrdenadas = new ArrayList<>(fichajesPorDia.keySet());
         fechasOrdenadas.sort(Comparator.reverseOrder());
 
@@ -317,55 +226,73 @@ public class MisFichajesController {
             List<Fichaje> fichajesDia = fichajesPorDia.get(fecha);
             fichajesDia.sort(Comparator.comparing(Fichaje::getFechaHora));
 
+            FichajeDiaDTO dto = new FichajeDiaDTO();
+            dto.setFecha(fecha);
+
+            // Procesar fichajes del día
             double totalDia = 0.0;
             LocalDateTime ultimaEntrada = null;
+            int parIndex = 1;
+            List<String> notasList = new ArrayList<>();
+            Set<String> climaSet = new HashSet<>();
 
-            // Crear fila por cada fichaje
             for (Fichaje f : fichajesDia) {
-                FichajeDetalleDTO fila = new FichajeDetalleDTO();
-                fila.setFecha(fecha);
-                fila.setHora(f.getFechaHora().toLocalTime());
-                fila.setTipo(f.getTipo().name());
-                fila.setNotas(f.getNotas());
-                fila.setClima(f.getClima());
-                fila.setEsResumenDia(false);
+                LocalTime hora = f.getFechaHora().toLocalTime();
 
-                // Si es SALIDA, calcular horas desde última ENTRADA
-                if (f.getTipo().name().equals("SALIDA") && ultimaEntrada != null) {
+                if (f.getTipo().name().equals("ENTRADA")) {
+                    ultimaEntrada = f.getFechaHora();
+                    // Asignar a entrada1, entrada2, etc
+                    switch (parIndex) {
+                        case 1: dto.setEntrada1(hora); break;
+                        case 2: dto.setEntrada2(hora); break;
+                        case 3: dto.setEntrada3(hora); break;
+                        case 4: dto.setEntrada4(hora); break;
+                        case 5: dto.setEntrada5(hora); break;
+                    }
+                } else if (f.getTipo().name().equals("SALIDA") && ultimaEntrada != null) {
+                    // Calcular horas del segmento
                     Duration duracion = Duration.between(ultimaEntrada, f.getFechaHora());
                     double horas = duracion.toMinutes() / 60.0;
-                    fila.setHorasSegmento(horas);
                     totalDia += horas;
+
+                    // Asignar a salida1, salida2, etc
+                    switch (parIndex) {
+                        case 1: dto.setSalida1(hora); break;
+                        case 2: dto.setSalida2(hora); break;
+                        case 3: dto.setSalida3(hora); break;
+                        case 4: dto.setSalida4(hora); break;
+                        case 5: dto.setSalida5(hora); break;
+                    }
+
+                    parIndex++;
                     ultimaEntrada = null;
-                } else if (f.getTipo().name().equals("ENTRADA")) {
-                    ultimaEntrada = f.getFechaHora();
                 }
 
-                filas.add(fila);
+                // Recopilar notas y clima
+                if (f.getNotas() != null && !f.getNotas().isEmpty()) {
+                    notasList.add(f.getNotas());
+                }
+                if (f.getClima() != null && !f.getClima().isEmpty()) {
+                    climaSet.add(f.getClima());
+                }
             }
 
-            // Fila de TOTAL DÍA
-            FichajeDetalleDTO resumenDia = new FichajeDetalleDTO();
-            resumenDia.setFecha(fecha);
-            resumenDia.setEsResumenDia(true);
-            resumenDia.setClima("TOTAL DÍA");
+            // Consolidar notas y clima
+            dto.setNotas(String.join("; ", notasList));
+            dto.setClima(String.join(", ", climaSet));
+            dto.setHorasTotales(totalDia);
 
-            if (ultimaEntrada != null) {
-                // Fichaje incompleto
-                resumenDia.setHorasSegmento(-1.0);
-            } else {
-                resumenDia.setHorasSegmento(totalDia);
+            filas.add(dto);
+
+            if (totalDia > 0) {
                 totalGeneralHoras += totalDia;
                 diasTrabajados++;
             }
-
-            filas.add(resumenDia);
         }
 
-        // Actualizar tabla
         tableFichajes.setItems(filas);
 
-        // Actualizar estadísticas con nuevo formato
+        // Actualizar estadísticas
         lblTotalPeriodo.setText(formatearHoras(totalGeneralHoras));
         lblDiasTrabajados.setText(diasTrabajados + " días");
 
@@ -377,15 +304,10 @@ public class MisFichajesController {
         }
     }
 
-    /**
-     * Convierte horas decimales a formato "Xh Ym"
-     * Ejemplo: 8.92 → "8h 55m"
-     */
     private String formatearHoras(double horasDecimal) {
         int horas = (int) horasDecimal;
         int minutos = (int) Math.round((horasDecimal - horas) * 60);
 
-        // Si los minutos son 60, ajustar a la siguiente hora
         if (minutos == 60) {
             horas++;
             minutos = 0;
@@ -400,7 +322,6 @@ public class MisFichajesController {
 
     @FXML
     private void handleVolver() {
-        System.out.println("🔙 Volviendo al dashboard...");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
             Parent root = loader.load();

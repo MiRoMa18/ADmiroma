@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 import org.example.dao.FichajeDAO;
 import org.example.model.Fichaje;
 import org.example.model.Trabajador;
-
 import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -272,18 +271,23 @@ public class MisEstadisticasController {
     private void actualizarGraficoMensual(Map<LocalDate, Double> horasPorDia) {
         chartMensualBarras.getData().clear();
 
+        // ✅ FIX: Crear y establecer categorías MANUALMENTE
+        ObservableList<String> categorias = FXCollections.observableArrayList();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
+
         XYChart.Series<String, Number> serie = new XYChart.Series<>();
         serie.setName("Horas Trabajadas");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
 
         horasPorDia.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> {
                     String fecha = entry.getKey().format(formatter);
+                    categorias.add(fecha);  // Añadir categoría a la lista
                     serie.getData().add(new XYChart.Data<>(fecha, entry.getValue()));
                 });
 
+        // Establecer categorías ANTES de añadir la serie
+        xAxisMensual.setCategories(categorias);
         chartMensualBarras.getData().add(serie);
     }
 
@@ -373,15 +377,22 @@ public class MisEstadisticasController {
     private void actualizarGraficoSemanal(Map<Integer, Double> totalesPorSemana) {
         chartSemanalBarras.getData().clear();
 
+        // ✅ FIX: Crear y establecer categorías MANUALMENTE
+        ObservableList<String> categorias = FXCollections.observableArrayList();
+
         XYChart.Series<String, Number> serie = new XYChart.Series<>();
         serie.setName("Horas por Semana");
 
         totalesPorSemana.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> {
-                    serie.getData().add(new XYChart.Data<>("Semana " + entry.getKey(), entry.getValue()));
+                    String categoria = "Semana " + entry.getKey();
+                    categorias.add(categoria);  // Añadir categoría a la lista
+                    serie.getData().add(new XYChart.Data<>(categoria, entry.getValue()));
                 });
 
+        // Establecer categorías ANTES de añadir la serie
+        xAxisSemanal.setCategories(categorias);
         chartSemanalBarras.getData().add(serie);
     }
 
@@ -481,28 +492,40 @@ public class MisEstadisticasController {
     private void actualizarGraficoAnualBarras(Map<Integer, Double> horasPorMes) {
         chartAnualBarras.getData().clear();
 
+        // ✅ FIX: Crear y establecer categorías MANUALMENTE
+        ObservableList<String> categorias = FXCollections.observableArrayList();
+
         XYChart.Series<String, Number> serie = new XYChart.Series<>();
         serie.setName("Horas por Mes");
 
         horasPorMes.forEach((mes, horas) -> {
             String nombreMes = obtenerNombreMes(mes);
+            categorias.add(nombreMes);  // Añadir categoría a la lista
             serie.getData().add(new XYChart.Data<>(nombreMes, horas));
         });
 
+        // Establecer categorías ANTES de añadir la serie
+        xAxisAnual.setCategories(categorias);
         chartAnualBarras.getData().add(serie);
     }
 
     private void actualizarGraficoAnualLinea(Map<Integer, Double> horasPorMes) {
         chartAnualLinea.getData().clear();
 
+        // ✅ FIX: Crear y establecer categorías MANUALMENTE
+        ObservableList<String> categorias = FXCollections.observableArrayList();
+
         XYChart.Series<String, Number> serie = new XYChart.Series<>();
         serie.setName("Evolución Anual");
 
         horasPorMes.forEach((mes, horas) -> {
             String nombreMes = obtenerNombreMes(mes);
+            categorias.add(nombreMes);  // Añadir categoría a la lista
             serie.getData().add(new XYChart.Data<>(nombreMes, horas));
         });
 
+        // Establecer categorías ANTES de añadir la serie
+        xAxisAnualLinea.setCategories(categorias);
         chartAnualLinea.getData().add(serie);
     }
 

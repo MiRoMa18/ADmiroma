@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.controller.admin.DialogoTrabajadorController"
+      spacing="20"
+      style="-fx-background-color: #ecf0f1; -fx-padding: 25;">
+
+    <!-- Título -->
+    <Label fx:id="lblTitulo" 
+           text="➕ Nuevo Trabajador"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <Separator/>
+
+    <!-- Formulario -->
+    <GridPane hgap="15" vgap="15">
+        
+        <!-- Número de Tarjeta -->
+        <Label text="Número de Tarjeta:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="txtNumeroTarjeta" 
+                   promptText="Ej: 1009"
+                   prefWidth="250"
+                   GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+        <!-- PIN -->
+        <Label text="PIN:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <PasswordField fx:id="txtPin" 
+                       promptText="4 dígitos"
+                       prefWidth="250"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+        <!-- Nombre -->
+        <Label text="Nombre:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <TextField fx:id="txtNombre" 
+                   promptText="Ej: Juan"
+                   prefWidth="250"
+                   GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+        <!-- Apellidos -->
+        <Label text="Apellidos:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextField fx:id="txtApellidos" 
+                   promptText="Ej: García Pérez"
+                   prefWidth="250"
+                   GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+        <!-- Email -->
+        <Label text="Email:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <TextField fx:id="txtEmail" 
+                   promptText="ejemplo@empresa.com"
+                   prefWidth="250"
+                   GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+        <!-- Rol -->
+        <Label text="Rol:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <ComboBox fx:id="cbRol" 
+                  prefWidth="250"
+                  GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+        <!-- Fecha de Alta -->
+        <Label text="Fecha de Alta:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+        <DatePicker fx:id="dpFechaAlta" 
+                    prefWidth="250"
+                    GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+
+    </GridPane>
+
+    <!-- Nota informativa -->
+    <VBox spacing="5" style="-fx-background-color: #fff3cd; -fx-border-color: #ffc107; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;">
+        <Label text="⚠️ Campos obligatorios:" style="-fx-font-weight: bold; -fx-text-fill: #856404;"/>
+        <Label text="• Número de Tarjeta (único en el sistema)" 
+               style="-fx-text-fill: #856404; -fx-font-size: 12px;"/>
+        <Label text="• PIN (mínimo 4 caracteres)" 
+               style="-fx-text-fill: #856404; -fx-font-size: 12px;"/>
+        <Label text="• Nombre" 
+               style="-fx-text-fill: #856404; -fx-font-size: 12px;"/>
+        <Label text="• Rol (ADMIN o TRABAJADOR)" 
+               style="-fx-text-fill: #856404; -fx-font-size: 12px;"/>
+    </VBox>
+
+    <!-- Botones -->
+    <HBox spacing="15" alignment="CENTER">
+        <Button fx:id="btnGuardar"
+                text="💾 Guardar"
+                onAction="#handleGuardar"
+                defaultButton="true"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 15px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+        <Button fx:id="btnCancelar"
+                text="❌ Cancelar"
+                onAction="#handleCancelar"
+                cancelButton="true"
+                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 15px; -fx-padding: 12 30; -fx-cursor: hand;"/>
+    </HBox>
+
+</VBox>

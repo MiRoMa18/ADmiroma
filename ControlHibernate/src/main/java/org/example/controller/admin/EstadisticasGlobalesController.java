@@ -1,7 +1,6 @@
 package org.example.controller.admin;
-
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -307,6 +306,9 @@ public class EstadisticasGlobalesController {
     private void actualizarGrafico(List<EstadisticaEmpleadoDTO> estadisticas) {
         chartComparativa.getData().clear();
 
+        // ✅ FIX: Crear y establecer categorías MANUALMENTE
+        ObservableList<String> categorias = FXCollections.observableArrayList();
+
         XYChart.Series<String, Number> serie = new XYChart.Series<>();
         serie.setName("Horas Trabajadas");
 
@@ -316,9 +318,12 @@ public class EstadisticasGlobalesController {
                 .sorted(Comparator.comparing(EstadisticaEmpleadoDTO::getTotalHoras).reversed())
                 .limit(10)
                 .forEach(e -> {
+                    categorias.add(e.getNombreCompleto());  // Añadir categoría a la lista
                     serie.getData().add(new XYChart.Data<>(e.getNombreCompleto(), e.getTotalHoras()));
                 });
 
+        // Establecer categorías ANTES de añadir la serie
+        xAxisEmpleados.setCategories(categorias);
         chartComparativa.getData().add(serie);
     }
 

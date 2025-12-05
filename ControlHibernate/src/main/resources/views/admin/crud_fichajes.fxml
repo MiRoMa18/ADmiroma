@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.controller.admin.CrudFichajesController"
+            style="-fx-background-color: #ecf0f1;">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="15" style="-fx-background-color: #34495e; -fx-padding: 20;">
+            
+            <!-- Título -->
+            <Label text="📋 Gestión de Fichajes - CRUD Administrador"
+                   style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+
+            <!-- Filtros -->
+            <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 8;">
+                
+                <VBox spacing="5">
+                    <Label text="Empleado:" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cbEmpleado" prefWidth="200" style="-fx-font-size: 13px;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text="Fecha Inicio:" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dpFechaInicio" prefWidth="140" style="-fx-font-size: 13px;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text="Fecha Fin:" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <DatePicker fx:id="dpFechaFin" prefWidth="140" style="-fx-font-size: 13px;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text="Tipo:" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <ComboBox fx:id="cbTipo" prefWidth="120" style="-fx-font-size: 13px;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text=" " style="-fx-font-size: 12px;"/>
+                    <HBox spacing="10">
+                        <Button fx:id="btnBuscar"
+                                text="🔍 Buscar"
+                                onAction="#handleBuscar"
+                                style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+                        <Button fx:id="btnLimpiar"
+                                text="🧹 Limpiar"
+                                onAction="#handleLimpiar"
+                                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 8 20; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <center>
+        <VBox spacing="15" style="-fx-padding: 20;">
+
+            <!-- Barra de herramientas -->
+            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                
+                <Button fx:id="btnNuevo"
+                        text="➕ Nuevo Fichaje"
+                        onAction="#handleNuevo"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+                <Button fx:id="btnEditar"
+                        text="✏️ Editar"
+                        onAction="#handleEditar"
+                        style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+                <Button fx:id="btnEliminar"
+                        text="🗑️ Eliminar"
+                        onAction="#handleEliminar"
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+                <Separator orientation="VERTICAL"/>
+
+                <Button fx:id="btnRefrescar"
+                        text="🔄 Refrescar"
+                        onAction="#handleRefrescar"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-cursor: hand;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="lblContador" text="Mostrando 0 registro(s)"
+                       style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+
+            </HBox>
+
+            <!-- Tabla de fichajes agrupada -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                
+                <Label text="📊 Fichajes Agrupados por Día"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="tableFichajes" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colEmpleado" text="Empleado" prefWidth="140"/>
+                            <TableColumn fx:id="colTarjeta" text="Tarjeta" prefWidth="70"/>
+                            <TableColumn fx:id="colFecha" text="Fecha" prefWidth="90"/>
+                            <TableColumn fx:id="colEntrada1" text="Entrada" prefWidth="60"/>
+                            <TableColumn fx:id="colSalida1" text="Salida" prefWidth="60"/>
+                            <TableColumn fx:id="colEntrada2" text="Entrada" prefWidth="60"/>
+                            <TableColumn fx:id="colSalida2" text="Salida" prefWidth="60"/>
+                            <TableColumn fx:id="colEntrada3" text="Entrada" prefWidth="60"/>
+                            <TableColumn fx:id="colSalida3" text="Salida" prefWidth="60"/>
+                            <TableColumn fx:id="colEntrada4" text="Entrada" prefWidth="60"/>
+                            <TableColumn fx:id="colSalida4" text="Salida" prefWidth="60"/>
+                            <TableColumn fx:id="colEntrada5" text="Entrada" prefWidth="60"/>
+                            <TableColumn fx:id="colSalida5" text="Salida" prefWidth="60"/>
+                            <TableColumn fx:id="colNotas" text="Notas" prefWidth="120"/>
+                            <TableColumn fx:id="colClima" text="Clima" prefWidth="100"/>
+                            <TableColumn fx:id="colHoras" text="Horas" prefWidth="80"/>
+                        </columns>
+                    </TableView>
+                </ScrollPane>
+
+                <Label text="📌 Vista agrupada: Cada fila muestra todos los fichajes de un día para un empleado"
+                       style="-fx-font-size: 11px; -fx-text-fill: #95a5a6; -fx-font-style: italic;"/>
+
+            </VBox>
+
+        </VBox>
+    </center>
+
+    <!-- FOOTER -->
+    <bottom>
+        <HBox alignment="CENTER" style="-fx-background-color: #34495e; -fx-padding: 15;">
+            <Button fx:id="btnVolver"
+                    text="⬅️ Volver al Dashboard"
+                    onAction="#handleVolver"
+                    style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 25; -fx-cursor: hand; -fx-font-weight: bold;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

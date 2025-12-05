@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.controller.admin.DialogoFichajeController"
+      spacing="20"
+      style="-fx-background-color: #ecf0f1; -fx-padding: 25;">
+
+    <!-- Título -->
+    <Label fx:id="lblTitulo" text="➕ Crear Nuevo Fichaje"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <Separator/>
+
+    <!-- Formulario -->
+    <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 8;">
+
+        <!-- Empleado -->
+        <VBox spacing="5">
+            <Label text="Empleado *" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <ComboBox fx:id="cbEmpleado" prefWidth="400" 
+                      promptText="Selecciona un empleado"
+                      style="-fx-font-size: 13px;"/>
+        </VBox>
+
+        <!-- Fecha y Hora -->
+        <HBox spacing="15">
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="Fecha *" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <DatePicker fx:id="dpFecha" prefWidth="190" 
+                           promptText="Selecciona fecha"
+                           style="-fx-font-size: 13px;"/>
+            </VBox>
+
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="Hora *" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <TextField fx:id="txtHora" prefWidth="190"
+                          promptText="HH:mm (ej: 08:30)"
+                          style="-fx-font-size: 13px;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Tipo -->
+        <VBox spacing="5">
+            <Label text="Tipo de Fichaje *" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <ComboBox fx:id="cbTipo" prefWidth="400"
+                      promptText="Selecciona el tipo"
+                      style="-fx-font-size: 13px;"/>
+        </VBox>
+
+        <Separator/>
+
+        <!-- Clima (opcional) -->
+        <VBox spacing="5">
+            <Label text="Clima (opcional)" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <TextField fx:id="txtClima" prefWidth="400"
+                      promptText="Ej: Soleado, Lluvia, Nublado..."
+                      style="-fx-font-size: 13px;"/>
+        </VBox>
+
+        <!-- Notas (opcional) -->
+        <VBox spacing="5">
+            <Label text="Notas (opcional)" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <TextArea fx:id="taNotas" prefRowCount="4" wrapText="true"
+                     promptText="Agrega cualquier nota adicional sobre este fichaje..."
+                     style="-fx-font-size: 13px;"/>
+        </VBox>
+
+    </VBox>
+
+    <!-- Nota informativa -->
+    <HBox spacing="10" alignment="CENTER_LEFT" 
+          style="-fx-background-color: #fff3cd; -fx-padding: 12; -fx-background-radius: 5; -fx-border-color: #ffc107; -fx-border-radius: 5; -fx-border-width: 1;">
+        <Label text="⚠️" style="-fx-font-size: 16px;"/>
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Importante:" style="-fx-font-weight: bold; -fx-text-fill: #856404; -fx-font-size: 12px;"/>
+            <Label text="• No se pueden crear fichajes con fecha/hora futura" wrapText="true"
+                   style="-fx-text-fill: #856404; -fx-font-size: 11px;"/>
+            <Label text="• No se permiten fichajes duplicados (mismo empleado, misma fecha/hora)" wrapText="true"
+                   style="-fx-text-fill: #856404; -fx-font-size: 11px;"/>
+        </VBox>
+    </HBox>
+
+    <!-- Botones -->
+    <HBox spacing="15" alignment="CENTER">
+        <Button fx:id="btnGuardar"
+                text="💾 Guardar"
+                onAction="#handleGuardar"
+                defaultButton="true"
+                prefWidth="150"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 12 25; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+        <Button fx:id="btnCancelar"
+                text="❌ Cancelar"
+                onAction="#handleCancelar"
+                cancelButton="true"
+                prefWidth="150"
+                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 12 25; -fx-cursor: hand;"/>
+    </HBox>
+
+    <!-- Leyenda campos requeridos -->
+    <Label text="* Campos obligatorios"
+           style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+
+</VBox>

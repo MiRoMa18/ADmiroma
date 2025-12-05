@@ -80,8 +80,23 @@ public class DashboardController {
     @FXML
     private void handleVerTodosFichajes() {
         System.out.println("🔘 Admin: Ver todos los fichajes (CRUD)");
-        // TODO: Cargar vista de tabla fichajes
-        mostrarMensajeTemporal("Vista de Fichajes (próximamente)");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/crud_fichajes.fxml"));
+            Parent root = loader.load();
+
+            org.example.controller.admin.CrudFichajesController controller = loader.getController();
+            controller.inicializar(trabajadorActual);
+
+            Stage stage = (Stage) btnVerTodosFichajes.getScene().getWindow();
+            stage.setScene(new Scene(root, 1200, 750));
+            stage.setTitle("Control Horario - Gestión de Fichajes");
+
+            System.out.println("✅ Vista 'CRUD Fichajes' cargada");
+
+        } catch (IOException e) {
+            System.err.println("❌ Error al cargar CRUD Fichajes: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -109,8 +124,23 @@ public class DashboardController {
     @FXML
     private void handleCrudTrabajadores() {
         System.out.println("🔘 Admin: CRUD Trabajadores");
-        // TODO: Cargar vista CRUD trabajadores
-        mostrarMensajeTemporal("CRUD Trabajadores (próximamente)");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/crud_trabajadores.fxml"));
+            Parent root = loader.load();
+
+            org.example.controller.admin.CrudTrabajadoresController controller = loader.getController();
+            controller.inicializar(trabajadorActual);
+
+            Stage stage = (Stage) btnCrudTrabajadores.getScene().getWindow();
+            stage.setScene(new Scene(root, 1100, 700));
+            stage.setTitle("Control Horario - Gestión de Trabajadores");
+
+            System.out.println("✅ Vista 'CRUD Trabajadores' cargada");
+
+        } catch (IOException e) {
+            System.err.println("❌ Error al cargar CRUD Trabajadores: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // ========== MÉTODOS COMUNES ==========
