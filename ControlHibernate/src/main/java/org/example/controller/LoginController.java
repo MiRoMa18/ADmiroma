@@ -1,16 +1,22 @@
 package org.example.controller;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.example.dao.TrabajadorDAO;
-import org.example.model.Trabajador;
+import org.example.model.entity.Trabajador;
+import org.example.util.AlertasUtil;
+import org.example.util.NavegacionUtil;
+import org.example.util.ValidadorUtil;
 
 import java.util.Optional;
 
+/**
+ * Controlador para la vista de login.
+ * Autentica trabajadores mediante número de tarjeta y PIN.
+ */
 public class LoginController {
 
     @FXML
@@ -22,25 +28,58 @@ public class LoginController {
     @FXML
     private Button btnLogin;
 
-    @FXML
-    private Label lblMensaje;
+    private final TrabajadorDAO trabajadorDAO = new TrabajadorDAO();
 
-    private TrabajadorDAO trabajadorDAO = new TrabajadorDAO();
-
+    /**
+     * Inicializa el controlador.
+     * Configura listeners y valores por defecto.
+     */
     @FXML
-    private void initialize() {
-        txtNumeroTarjeta.textProperty().addListener((obs, old, nuevo) -> lblMensaje.setText(""));
-        txtPin.textProperty().addListener((obs, old, nuevo) -> lblMensaje.setText(""));
+    public void initialize() {
+        System.out.println("🔐 LoginController inicializado");
+
+        // Enter en cualquier campo = hacer login
+        txtNumeroTarjeta.setOnAction(event -> handleLogin());
+        txtPin.setOnAction(event -> handleLogin());
+
+        // Focus automático en número de tarjeta
+        txtNumeroTarjeta.requestFocus();
     }
 
+    /**
+     * Maneja el evento de click en el botón Login.
+     */
     @FXML
     private void handleLogin() {
+        System.out.println("🔐 Intento de login");
+
         String numeroTarjeta = txtNumeroTarjeta.getText().trim();
         String pin = txtPin.getText().trim();
 
         // Validar campos vacíos
         if (numeroTarjeta.isEmpty() || pin.isEmpty()) {
-            mostrarError("Por favor, completa todos los campos");
+            AlertasUtil.mostrarError(
+                    "Campos incompletos",
+                    "Por favor ingrese número de tarjeta y PIN"
+            );
+            return;
+        }
+
+        // Validar formato de número de tarjeta
+        if (!ValidadorUtil.esNumeroTarjetaValido(numeroTarjeta)) {
+            AlertasUtil.mostrarError(
+                    "Número de tarjeta inválido",
+                    "El número de tarjeta debe tener entre 4 y 20 dígitos"
+            );
+            return;
+        }
+
+        // Validar formato de PIN
+        if (!ValidadorUtil.esPinValido(pin)) {
+            AlertasUtil.mostrarError(
+                    "PIN inválido",
+                    "El PIN debe tener entre 4 y 10 dígitos"
+            );
             return;
         }
 
@@ -50,43 +89,40 @@ public class LoginController {
         if (trabajadorOpt.isPresent()) {
             Trabajador trabajador = trabajadorOpt.get();
 
-            // Cargar Dashboard
-            cargarDashboard(trabajador);
+            System.out.println("✅ Login exitoso: " + trabajador.getNombreCompleto());
+
+            // Navegar al dashboard
+            NavegacionUtil.abrirDashboard(btnLogin, trabajador);
 
         } else {
-            mostrarError("Número de tarjeta o PIN incorrecto");
+            System.out.println("❌ Login fallido");
+
+            AlertasUtil.mostrarError(
+                    "Autenticación fallida",
+                    "Número de tarjeta o PIN incorrectos"
+            );
+
+            // Limpiar campos
+            txtPin.clear();
+            txtNumeroTarjeta.requestFocus();
         }
     }
 
-    private void cargarDashboard(Trabajador trabajador) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
-            Parent root = loader.load();
+    /**
+     * Maneja el evento de click en "Salir".
+     */
+    @FXML
+    private void handleSalir() {
+        System.out.println("🚪 Cerrando aplicación...");
 
-            // Obtener el controlador y pasarle el trabajador
-            DashboardController controller = loader.getController();
-            controller.inicializar(trabajador);
+        boolean confirmar = AlertasUtil.confirmarAccion(
+                "Salir",
+                "¿Está seguro que desea salir?"
+        );
 
-            // Cambiar de escena
+        if (confirmar) {
             Stage stage = (Stage) btnLogin.getScene().getWindow();
-            stage.setScene(new Scene(root, 800, 600));
-            stage.setTitle("Control Horario - Dashboard");
-
-
-        } catch (Exception e) {
-            System.err.println("❌ Error al cargar dashboard: " + e.getMessage());
-            e.printStackTrace();
-            mostrarError("Error al cargar el panel principal");
+            stage.close();
         }
-    }
-
-    private void mostrarError(String mensaje) {
-        lblMensaje.setText(mensaje);
-        lblMensaje.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-    }
-
-    private void mostrarExito(String mensaje) {
-        lblMensaje.setText(mensaje);
-        lblMensaje.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
     }
 }

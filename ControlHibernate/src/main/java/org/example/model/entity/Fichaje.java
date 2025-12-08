@@ -1,8 +1,13 @@
-package org.example.model;
+package org.example.model.entity;
 
 import jakarta.persistence.*;
+import org.example.model.enums.TipoFichaje;
+
 import java.time.LocalDateTime;
 
+/**
+ * Entidad que representa un fichaje (entrada o salida) de un trabajador.
+ */
 @Entity
 @Table(name = "fichaje")
 public class Fichaje {
@@ -28,6 +33,7 @@ public class Fichaje {
     @Column(columnDefinition = "TEXT")
     private String notas;
 
+    // Constructores
     public Fichaje() {
     }
 
@@ -40,6 +46,7 @@ public class Fichaje {
         this.notas = notas;
     }
 
+    // Getters y Setters
     public Integer getId() {
         return id;
     }

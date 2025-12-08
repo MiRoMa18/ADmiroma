@@ -1,205 +1,149 @@
 package org.example.controller.admin;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.example.dao.FichajeDAO;
-import org.example.model.Fichaje;
-import org.example.model.TipoFichaje;
-import org.example.model.Trabajador;
+import org.example.dao.TrabajadorDAO;
+import org.example.model.entity.Fichaje;
+import org.example.model.entity.Trabajador;
+import org.example.model.enums.TipoFichaje;
+import org.example.service.ClimaService;
+import org.example.util.AlertasUtil;
+import org.example.util.ValidadorUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Controlador para el diálogo de crear/editar fichaje.
+ */
 public class DialogoFichajeController {
 
-    @FXML private ComboBox<Trabajador> cbEmpleado;
+    @FXML private ComboBox<Trabajador> cmbTrabajador;
     @FXML private DatePicker dpFecha;
     @FXML private TextField txtHora;
-    @FXML private ComboBox<String> cbTipo;
+    @FXML private ComboBox<TipoFichaje> cmbTipo;
     @FXML private TextField txtClima;
-    @FXML private TextArea taNotas;
+    @FXML private Button btnObtenerClima;
+    @FXML private TextArea txtNotas;
     @FXML private Button btnGuardar;
     @FXML private Button btnCancelar;
-    @FXML private Label lblTitulo;
 
-    private FichajeDAO fichajeDAO = new FichajeDAO();
-    private Integer fichajeIdEditar = null; // null = crear nuevo, not null = editar
-    private Fichaje fichajeActual = null;
+    private Fichaje fichajeEditar = null;
+    private boolean guardado = false;
+    private final FichajeDAO fichajeDAO = new FichajeDAO();
+    private final TrabajadorDAO trabajadorDAO = new TrabajadorDAO();
+    private final ClimaService climaService = new ClimaService();
 
-    /**
-     * Inicializar el diálogo
-     * @param fichajeId ID del fichaje a editar (null para crear nuevo)
-     * @param trabajadores Lista de todos los trabajadores
-     */
-    public void inicializar(Integer fichajeId, List<Trabajador> trabajadores) {
-        this.fichajeIdEditar = fichajeId;
+    public void inicializarNuevo() throws Exception {
+        this.fichajeEditar = null;
+        System.out.println("➕ Modo: CREAR nuevo fichaje");
 
-        // Configurar ComboBox de empleados
-        cbEmpleado.setItems(FXCollections.observableArrayList(trabajadores));
-        cbEmpleado.setConverter(new javafx.util.StringConverter<Trabajador>() {
-            @Override
-            public String toString(Trabajador trabajador) {
-                return trabajador == null ? "" : trabajador.getNombreCompleto() + " (" + trabajador.getNumeroTarjeta() + ")";
-            }
+        configurarComponentes();
+        cargarTrabajadores();
 
-            @Override
-            public Trabajador fromString(String string) {
-                return null;
-            }
-        });
+        dpFecha.setValue(LocalDate.now());
+        txtHora.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+        cmbTipo.setValue(TipoFichaje.ENTRADA);
 
-        // Configurar ComboBox de tipo
-        cbTipo.setItems(FXCollections.observableArrayList("ENTRADA", "SALIDA"));
-
-        // Placeholder para hora
-        txtHora.setPromptText("HH:mm (ej: 08:30)");
-
-        if (fichajeId == null) {
-            // MODO CREAR
-            lblTitulo.setText("➕ Crear Nuevo Fichaje");
-            dpFecha.setValue(LocalDate.now());
-            txtHora.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
-        } else {
-            // MODO EDITAR
-            lblTitulo.setText("✏️ Editar Fichaje");
-            cargarFichaje(fichajeId);
-        }
+        obtenerClimaActual();
     }
 
-    private void cargarFichaje(Integer fichajeId) {
-        Optional<Fichaje> fichajeOpt = fichajeDAO.buscarPorId(fichajeId);
+    public void inicializarEditar(Fichaje fichaje) {
+        this.fichajeEditar = fichaje;
+        System.out.println("✏️ Modo: EDITAR fichaje - ID: " + fichaje.getId());
 
-        if (fichajeOpt.isEmpty()) {
-            mostrarError("Error", "No se encontró el fichaje con ID " + fichajeId);
-            cerrarDialogo();
-            return;
-        }
+        configurarComponentes();
+        cargarTrabajadores();
 
-        fichajeActual = fichajeOpt.get();
+        cmbTrabajador.setValue(fichaje.getTrabajador());
+        cmbTrabajador.setDisable(true); // No permitir cambiar trabajador
 
-        // Rellenar campos con datos del fichaje
-        cbEmpleado.setValue(fichajeActual.getTrabajador());
-        dpFecha.setValue(fichajeActual.getFechaHora().toLocalDate());
-        txtHora.setText(fichajeActual.getFechaHora().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-        cbTipo.setValue(fichajeActual.getTipo().name());
-        txtClima.setText(fichajeActual.getClima() != null ? fichajeActual.getClima() : "");
-        taNotas.setText(fichajeActual.getNotas() != null ? fichajeActual.getNotas() : "");
+        dpFecha.setValue(fichaje.getFechaHora().toLocalDate());
+        txtHora.setText(fichaje.getFechaHora().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+        cmbTipo.setValue(fichaje.getTipo());
+        txtClima.setText(fichaje.getClima());
+        txtNotas.setText(fichaje.getNotas());
     }
 
-    @FXML
-    private void handleGuardar() {
-        // Validar campos
-        if (!validarCampos()) {
-            return;
-        }
+    private void configurarComponentes() {
+        cmbTipo.getItems().setAll(TipoFichaje.values());
 
+        txtHora.setPromptText("HH:mm");
+        txtNotas.setWrapText(true);
+
+        txtNotas.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().length() <= 500) {
+                return change;
+            }
+            return null;
+        }));
+    }
+
+    private void cargarTrabajadores() {
         try {
-            // Obtener valores
-            Trabajador trabajador = cbEmpleado.getValue();
-            LocalDate fecha = dpFecha.getValue();
-            LocalTime hora = LocalTime.parse(txtHora.getText(), DateTimeFormatter.ofPattern("HH:mm"));
-            LocalDateTime fechaHora = LocalDateTime.of(fecha, hora);
-            TipoFichaje tipo = TipoFichaje.valueOf(cbTipo.getValue());
-            String clima = txtClima.getText().trim().isEmpty() ? null : txtClima.getText().trim();
-            String notas = taNotas.getText().trim().isEmpty() ? null : taNotas.getText().trim();
+            List<Trabajador> trabajadores = trabajadorDAO.obtenerTodos();
+            cmbTrabajador.getItems().setAll(trabajadores);
 
-            // Validar que no sea fecha futura
-            if (fechaHora.isAfter(LocalDateTime.now())) {
-                mostrarAlerta("Fecha inválida", "No se puede crear un fichaje con fecha futura");
-                return;
-            }
+            cmbTrabajador.setButtonCell(new ListCell<Trabajador>() {
+                @Override
+                protected void updateItem(Trabajador item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? "" : item.getNombreCompleto());
+                }
+            });
 
-            // Verificar duplicados
-            Integer idExcluir = fichajeIdEditar; // Para edición, excluir el propio ID
-            if (fichajeDAO.existeDuplicado(trabajador.getId(), fechaHora, idExcluir)) {
-                mostrarAlerta("Fichaje duplicado",
-                        "Ya existe un fichaje para este empleado en la misma fecha y hora exacta");
-                return;
-            }
-
-            boolean exito;
-
-            if (fichajeIdEditar == null) {
-                // CREAR NUEVO
-                Fichaje nuevoFichaje = new Fichaje();
-                nuevoFichaje.setTrabajador(trabajador);
-                nuevoFichaje.setFechaHora(fechaHora);
-                nuevoFichaje.setTipo(tipo);
-                nuevoFichaje.setClima(clima);
-                nuevoFichaje.setNotas(notas);
-
-                exito = fichajeDAO.guardar(nuevoFichaje);
-
-            } else {
-                // ACTUALIZAR EXISTENTE
-                fichajeActual.setTrabajador(trabajador);
-                fichajeActual.setFechaHora(fechaHora);
-                fichajeActual.setTipo(tipo);
-                fichajeActual.setClima(clima);
-                fichajeActual.setNotas(notas);
-
-                exito = fichajeDAO.actualizar(fichajeActual);
-            }
-
-            if (exito) {
-                mostrarInformacion("Éxito",
-                        fichajeIdEditar == null ? "Fichaje creado correctamente" : "Fichaje actualizado correctamente");
-                cerrarDialogo();
-            } else {
-                mostrarError("Error", "No se pudo guardar el fichaje");
-            }
-
-        } catch (DateTimeParseException e) {
-            mostrarAlerta("Hora inválida", "El formato de hora debe ser HH:mm (ej: 08:30)");
+            cmbTrabajador.setCellFactory(param -> new ListCell<Trabajador>() {
+                @Override
+                protected void updateItem(Trabajador item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? "" : item.getNombreCompleto());
+                }
+            });
         } catch (Exception e) {
-            System.err.println("Error al guardar fichaje: " + e.getMessage());
-            e.printStackTrace();
-            mostrarError("Error", "Ocurrió un error al guardar: " + e.getMessage());
+            AlertasUtil.mostrarError("Error", "No se pudieron cargar los trabajadores");
         }
     }
 
     private boolean validarCampos() {
-        // Validar empleado
-        if (cbEmpleado.getValue() == null) {
-            mostrarAlerta("Campo requerido", "Debes seleccionar un empleado");
-            cbEmpleado.requestFocus();
+        if (cmbTrabajador.getValue() == null) {
+            AlertasUtil.mostrarError("Error", "Debe seleccionar un trabajador");
             return false;
         }
 
-        // Validar fecha
         if (dpFecha.getValue() == null) {
-            mostrarAlerta("Campo requerido", "Debes seleccionar una fecha");
-            dpFecha.requestFocus();
+            AlertasUtil.mostrarError("Error", "Debe seleccionar una fecha");
             return false;
         }
 
-        // Validar hora
-        if (txtHora.getText().trim().isEmpty()) {
-            mostrarAlerta("Campo requerido", "Debes ingresar una hora");
-            txtHora.requestFocus();
+        if (dpFecha.getValue().isAfter(LocalDate.now())) {
+            AlertasUtil.mostrarError("Error", "La fecha no puede ser futura");
             return false;
         }
 
-        // Validar formato de hora
-        try {
-            LocalTime.parse(txtHora.getText(), DateTimeFormatter.ofPattern("HH:mm"));
-        } catch (DateTimeParseException e) {
-            mostrarAlerta("Formato inválido", "El formato de hora debe ser HH:mm (ej: 08:30)");
-            txtHora.requestFocus();
+        String hora = txtHora.getText().trim();
+        if (!ValidadorUtil.esHoraValida(hora)) {
+            AlertasUtil.mostrarError("Error", "Hora inválida (formato HH:mm)");
             return false;
         }
 
-        // Validar tipo
-        if (cbTipo.getValue() == null) {
-            mostrarAlerta("Campo requerido", "Debes seleccionar un tipo de fichaje");
-            cbTipo.requestFocus();
+        if (cmbTipo.getValue() == null) {
+            AlertasUtil.mostrarError("Error", "Debe seleccionar el tipo de fichaje");
+            return false;
+        }
+
+        // Verificar que la fecha-hora no sea futura
+        LocalDateTime fechaHora = LocalDateTime.of(
+                dpFecha.getValue(),
+                LocalTime.parse(hora, DateTimeFormatter.ofPattern("HH:mm"))
+        );
+
+        if (fechaHora.isAfter(LocalDateTime.now())) {
+            AlertasUtil.mostrarError("Error", "La fecha y hora no pueden ser futuras");
             return false;
         }
 
@@ -207,7 +151,67 @@ public class DialogoFichajeController {
     }
 
     @FXML
+    private void handleObtenerClima() throws Exception {
+        obtenerClimaActual();
+    }
+
+    private void obtenerClimaActual() throws Exception {
+        String clima = climaService.obtenerClima();
+        txtClima.setText(clima);
+    }
+
+    @FXML
+    private void handleGuardar() {
+        if (!validarCampos()) {
+            return;
+        }
+
+        try {
+            Trabajador trabajador = cmbTrabajador.getValue();
+            LocalDate fecha = dpFecha.getValue();
+            LocalTime hora = LocalTime.parse(txtHora.getText().trim(), DateTimeFormatter.ofPattern("HH:mm"));
+            LocalDateTime fechaHora = LocalDateTime.of(fecha, hora);
+            TipoFichaje tipo = cmbTipo.getValue();
+            String clima = txtClima.getText().trim();
+            String notas = txtNotas.getText().trim();
+
+            if (fichajeEditar == null) {
+                // CREAR
+                Fichaje nuevo = new Fichaje();
+                nuevo.setTrabajador(trabajador);
+                nuevo.setFechaHora(fechaHora);
+                nuevo.setTipo(tipo);
+                nuevo.setClima(clima.isEmpty() ? null : clima);
+                nuevo.setNotas(notas.isEmpty() ? null : notas);
+
+                if (fichajeDAO.guardar(nuevo)) {
+                    guardado = true;
+                    cerrarDialogo();
+                } else {
+                    AlertasUtil.mostrarError("Error", "No se pudo guardar el fichaje");
+                }
+            } else {
+                // EDITAR
+                fichajeEditar.setFechaHora(fechaHora);
+                fichajeEditar.setTipo(tipo);
+                fichajeEditar.setClima(clima.isEmpty() ? null : clima);
+                fichajeEditar.setNotas(notas.isEmpty() ? null : notas);
+
+                if (fichajeDAO.actualizar(fichajeEditar)) {
+                    guardado = true;
+                    cerrarDialogo();
+                } else {
+                    AlertasUtil.mostrarError("Error", "No se pudo actualizar el fichaje");
+                }
+            }
+        } catch (Exception e) {
+            AlertasUtil.mostrarError("Error", "Error al guardar: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void handleCancelar() {
+        guardado = false;
         cerrarDialogo();
     }
 
@@ -216,27 +220,7 @@ public class DialogoFichajeController {
         stage.close();
     }
 
-    private void mostrarAlerta(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
-    }
-
-    private void mostrarError(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
-    }
-
-    private void mostrarInformacion(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+    public boolean isGuardado() {
+        return guardado;
     }
 }

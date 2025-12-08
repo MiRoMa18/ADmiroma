@@ -126,9 +126,9 @@
                         <columns>
                             <TableColumn fx:id="colNombre" text="Nombre Completo" prefWidth="180"/>
                             <TableColumn fx:id="colTarjeta" text="Tarjeta" prefWidth="80"/>
-                            <TableColumn fx:id="colDias" text="Días Trabajados" prefWidth="120"/>
+                            <TableColumn fx:id="colDiasTrabajados" text="Días Trabajados" prefWidth="120"/>
                             <TableColumn fx:id="colTotalHoras" text="Total Horas" prefWidth="110"/>
-                            <TableColumn fx:id="colPromedio" text="Promedio/Día" prefWidth="110"/>
+                            <TableColumn fx:id="colPromedioDiario" text="Promedio/Día" prefWidth="110"/>
                             <TableColumn fx:id="colIncompletos" text="Fichajes Incompletos" prefWidth="140"/>
                             <TableColumn fx:id="colEstado" text="Estado" prefWidth="120"/>
                         </columns>

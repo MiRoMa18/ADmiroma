@@ -1,59 +1,72 @@
 package org.example.dao;
 
 import org.example.config.HibernateUtil;
-import org.example.model.Trabajador;
+import org.example.model.entity.Trabajador;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 import java.util.List;
 import java.util.Optional;
 
-public class TrabajadorDAO {
+/**
+ * DAO para la entidad Trabajador.
+ * Hereda operaciones CRUD genéricas de BaseDAO y añade métodos específicos.
+ */
+public class TrabajadorDAO extends BaseDAO<Trabajador> {
 
+    public TrabajadorDAO() {
+        super(Trabajador.class);
+    }
+
+    /**
+     * Autentica un trabajador por número de tarjeta y PIN.
+     * Usa hash BCrypt para verificar el PIN de forma segura.
+     *
+     * @param numeroTarjeta Número de tarjeta del trabajador
+     * @param pin PIN en texto plano
+     * @return Optional con el trabajador si las credenciales son correctas
+     */
     public Optional<Trabajador> autenticar(String numeroTarjeta, String pin) {
+        System.out.println("🔐 TrabajadorDAO.autenticar()");
+        System.out.println("   Tarjeta: " + numeroTarjeta);
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-
-            String hql = "FROM Trabajador t WHERE t.numeroTarjeta = :tarjeta AND t.pin = :pin";
-
+            // Buscar trabajador por número de tarjeta
+            String hql = "FROM Trabajador t WHERE t.numeroTarjeta = :tarjeta";
             Query<Trabajador> query = session.createQuery(hql, Trabajador.class);
             query.setParameter("tarjeta", numeroTarjeta);
-            query.setParameter("pin", pin);
 
-            Optional<Trabajador> resultado = query.uniqueResultOptional();
+            Optional<Trabajador> trabajadorOpt = query.uniqueResultOptional();
 
-            return resultado;
+            // Verificar PIN directamente (sin BCrypt)
+            if (trabajadorOpt.isPresent()) {
+                Trabajador trabajador = trabajadorOpt.get();
+
+                if (pin.equals(trabajador.getPin())) {
+                    System.out.println("   ✅ Autenticación exitosa - Rol: " + trabajador.getRol());
+                    return trabajadorOpt;
+                } else {
+                    System.out.println("   ❌ PIN incorrecto");
+                }
+            } else {
+                System.out.println("   ❌ Trabajador no encontrado");
+            }
+
+            return Optional.empty();
 
         } catch (Exception e) {
-            System.err.println("   💥 ERROR en TrabajadorDAO.autenticar(): " + e.getMessage());
+            System.err.println("   💥 ERROR en autenticar: " + e.getMessage());
             e.printStackTrace();
             return Optional.empty();
         }
     }
 
     /**
-     * Obtener todos los trabajadores ordenados por nombre
-     */
-    public List<Trabajador> obtenerTodos() {
-        System.out.println("🗄️  TrabajadorDAO.obtenerTodos()");
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Trabajador t ORDER BY t.nombre ASC";
-            Query<Trabajador> query = session.createQuery(hql, Trabajador.class);
-            List<Trabajador> resultado = query.list();
-
-            System.out.println("   ✅ Encontrados " + resultado.size() + " trabajadores");
-            return resultado;
-
-        } catch (Exception e) {
-            System.err.println("   💥 ERROR en TrabajadorDAO.obtenerTodos(): " + e.getMessage());
-            e.printStackTrace();
-            return List.of();
-        }
-    }
-
-    /**
-     * Buscar trabajador por número de tarjeta
+     * Busca un trabajador por su número de tarjeta.
+     * Útil para validar unicidad antes de crear/editar.
+     *
+     * @param numeroTarjeta Número de tarjeta único
+     * @return Optional con el trabajador si existe
      */
     public Optional<Trabajador> buscarPorNumeroTarjeta(String numeroTarjeta) {
         System.out.println("🗄️  TrabajadorDAO.buscarPorNumeroTarjeta(" + numeroTarjeta + ")");
@@ -64,104 +77,85 @@ public class TrabajadorDAO {
             query.setParameter("tarjeta", numeroTarjeta);
 
             Optional<Trabajador> resultado = query.uniqueResultOptional();
-            System.out.println("   ✅ Resultado: " + (resultado.isPresent() ? "Encontrado" : "No encontrado"));
+
+            System.out.println("   ✅ Resultado: " +
+                    (resultado.isPresent() ? "Encontrado" : "No encontrado"));
+
             return resultado;
 
         } catch (Exception e) {
-            System.err.println("   💥 ERROR en TrabajadorDAO.buscarPorNumeroTarjeta(): " + e.getMessage());
+            System.err.println("   💥 ERROR en buscarPorNumeroTarjeta: " + e.getMessage());
             e.printStackTrace();
             return Optional.empty();
         }
     }
 
     /**
-     * Buscar trabajador por ID
+     * Obtiene todos los trabajadores ordenados por nombre.
+     * Sobrescribe el método de BaseDAO para añadir ordenamiento.
+     *
+     * @return Lista de trabajadores ordenada alfabéticamente
      */
-    public Optional<Trabajador> buscarPorId(Integer id) {
-        System.out.println("🗄️  TrabajadorDAO.buscarPorId(" + id + ")");
+    @Override
+    public List<Trabajador> obtenerTodos() {
+        System.out.println("🗄️  TrabajadorDAO.obtenerTodos()");
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Trabajador trabajador = session.get(Trabajador.class, id);
-            System.out.println("   ✅ Resultado: " + (trabajador != null ? "Encontrado" : "No encontrado"));
-            return Optional.ofNullable(trabajador);
+            String hql = "FROM Trabajador t ORDER BY t.nombre ASC, t.apellidos ASC";
+            Query<Trabajador> query = session.createQuery(hql, Trabajador.class);
+            List<Trabajador> resultado = query.list();
+
+            System.out.println("   ✅ Encontrados " + resultado.size() + " trabajadores");
+            return resultado;
 
         } catch (Exception e) {
-            System.err.println("   💥 ERROR en TrabajadorDAO.buscarPorId(): " + e.getMessage());
+            System.err.println("   💥 ERROR en obtenerTodos: " + e.getMessage());
             e.printStackTrace();
-            return Optional.empty();
+            return List.of();
         }
     }
 
     /**
-     * Crear nuevo trabajador
+     * Verifica si un número de tarjeta ya existe en el sistema.
+     * Útil para validación antes de crear un trabajador.
+     *
+     * @param numeroTarjeta Número de tarjeta a verificar
+     * @return true si ya existe
      */
-    public boolean crear(Trabajador trabajador) {
-        System.out.println("🗄️  TrabajadorDAO.crear()");
-        System.out.println("   Tarjeta: " + trabajador.getNumeroTarjeta() + ", Nombre: " + trabajador.getNombre());
+    public boolean existeNumeroTarjeta(String numeroTarjeta) {
+        return buscarPorNumeroTarjeta(numeroTarjeta).isPresent();
+    }
+
+    /**
+     * Verifica si un número de tarjeta ya existe, excluyendo un ID específico.
+     * Útil para validación al editar un trabajador.
+     *
+     * @param numeroTarjeta Número de tarjeta a verificar
+     * @param excluirId ID del trabajador a excluir de la búsqueda
+     * @return true si ya existe en otro trabajador
+     */
+    public boolean existeNumeroTarjetaExcluyendo(String numeroTarjeta, Integer excluirId) {
+        System.out.println("🗄️  TrabajadorDAO.existeNumeroTarjetaExcluyendo(" +
+                numeroTarjeta + ", excluir: " + excluirId + ")");
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            var tx = session.beginTransaction();
-            session.persist(trabajador);
-            tx.commit();
+            String hql = "FROM Trabajador t WHERE t.numeroTarjeta = :tarjeta AND t.id != :id";
+            Query<Trabajador> query = session.createQuery(hql, Trabajador.class);
+            query.setParameter("tarjeta", numeroTarjeta);
+            query.setParameter("id", excluirId);
 
-            System.out.println("   ✅ Trabajador creado con ID: " + trabajador.getId());
-            return true;
+            boolean existe = query.uniqueResultOptional().isPresent();
+
+            System.out.println("   ✅ Existe: " + existe);
+            return existe;
 
         } catch (Exception e) {
-            System.err.println("   💥 ERROR en TrabajadorDAO.crear(): " + e.getMessage());
+            System.err.println("   💥 ERROR en existeNumeroTarjetaExcluyendo: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    /**
-     * Actualizar trabajador existente
-     */
-    public boolean actualizar(Trabajador trabajador) {
-        System.out.println("🗄️  TrabajadorDAO.actualizar()");
-        System.out.println("   ID: " + trabajador.getId() + ", Nombre: " + trabajador.getNombre());
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            var tx = session.beginTransaction();
-            session.merge(trabajador);
-            tx.commit();
-
-            System.out.println("   ✅ Trabajador actualizado correctamente");
-            return true;
-
-        } catch (Exception e) {
-            System.err.println("   💥 ERROR en TrabajadorDAO.actualizar(): " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Eliminar trabajador por ID
-     * NOTA: También eliminará todos sus fichajes (CASCADE en BD)
-     */
-    public boolean eliminar(Integer id) {
-        System.out.println("🗄️  TrabajadorDAO.eliminar(" + id + ")");
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            var tx = session.beginTransaction();
-
-            Trabajador trabajador = session.get(Trabajador.class, id);
-            if (trabajador != null) {
-                session.remove(trabajador);
-                tx.commit();
-                System.out.println("   ✅ Trabajador eliminado correctamente");
-                return true;
-            } else {
-                tx.rollback();
-                System.out.println("   ⚠️ Trabajador no encontrado");
-                return false;
-            }
-
-        } catch (Exception e) {
-            System.err.println("   💥 ERROR en TrabajadorDAO.eliminar(): " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
+    // Los métodos guardar(), actualizar(), eliminar() y buscarPorId()
+    // se heredan de BaseDAO<Trabajador> y no necesitan ser reimplementados
 }

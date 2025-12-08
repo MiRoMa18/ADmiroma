@@ -1,11 +1,16 @@
-package org.example.model;
+package org.example.model.entity;
 
 import jakarta.persistence.*;
+import org.example.model.enums.Rol;
 
 import java.time.LocalDate;
 
+/**
+ * Entidad que representa un trabajador en el sistema.
+ * Puede tener rol de ADMIN o TRABAJADOR.
+ */
 @Entity
-@Table(name="trabajador")
+@Table(name = "trabajador")
 public class Trabajador {
 
     @Id
@@ -15,7 +20,7 @@ public class Trabajador {
     @Column(name = "numero_tarjeta", unique = true, nullable = false, length = 20)
     private String numeroTarjeta;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 100)
     private String pin;
 
     @Column(nullable = false, length = 100)
@@ -34,6 +39,7 @@ public class Trabajador {
     @Column(name = "fecha_alta")
     private LocalDate fechaAlta;
 
+    // Constructores
     public Trabajador() {
     }
 
@@ -48,6 +54,7 @@ public class Trabajador {
         this.fechaAlta = fechaAlta;
     }
 
+    // Getters y Setters
     public Integer getId() {
         return id;
     }
@@ -112,6 +119,7 @@ public class Trabajador {
         this.fechaAlta = fechaAlta;
     }
 
+    // Métodos de utilidad
     public String getNombreCompleto() {
         return nombre + " " + apellidos;
     }
@@ -126,4 +134,3 @@ public class Trabajador {
                 '}';
     }
 }
-

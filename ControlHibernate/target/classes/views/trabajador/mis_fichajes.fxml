@@ -76,7 +76,8 @@
                     <TableColumn fx:id="colSalida5" text="Salida" prefWidth="70" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="colNotas" text="Notas" prefWidth="150"/>
                     <TableColumn fx:id="colClima" text="Clima" prefWidth="100"/>
-                    <TableColumn fx:id="colHoras" text="Total Horas" prefWidth="90" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colHorasTotales" text="Total Horas" prefWidth="90" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colEstado" text="Estado" prefWidth="100" style="-fx-alignment: CENTER;"/>
                 </columns>
             </TableView>
         </ScrollPane>

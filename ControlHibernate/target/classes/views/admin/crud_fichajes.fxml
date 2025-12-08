@@ -119,7 +119,8 @@
                             <TableColumn fx:id="colSalida5" text="Salida" prefWidth="60"/>
                             <TableColumn fx:id="colNotas" text="Notas" prefWidth="120"/>
                             <TableColumn fx:id="colClima" text="Clima" prefWidth="100"/>
-                            <TableColumn fx:id="colHoras" text="Horas" prefWidth="80"/>
+                            <TableColumn fx:id="colHorasTotales" text="Horas" prefWidth="80"/>
+                            <TableColumn fx:id="colEstado" text="Estado" prefWidth="100"/>
                         </columns>
                     </TableView>
                 </ScrollPane>

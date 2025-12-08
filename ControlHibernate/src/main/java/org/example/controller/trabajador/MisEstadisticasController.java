@@ -1,662 +1,368 @@
 package org.example.controller.trabajador;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.chart.*;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
 import org.example.dao.FichajeDAO;
-import org.example.model.Fichaje;
-import org.example.model.Trabajador;
-import java.io.IOException;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
+import org.example.model.entity.Fichaje;
+import org.example.model.entity.Trabajador;
+import org.example.model.enums.TipoFichaje;
+import org.example.util.AlertasUtil;
+import org.example.util.HorasFormateador;
+import org.example.util.NavegacionUtil;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
 import java.time.format.TextStyle;
-import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador Mis Estadísticas (TRABAJADOR).
+ * CORREGIDO: Sin horas negativas + gráfico funcional primera vez.
+ */
 public class MisEstadisticasController {
 
-    // === FILTROS ===
+    // FILTROS
     @FXML private ComboBox<String> cbMes;
     @FXML private ComboBox<Integer> cbAnio;
     @FXML private Button btnBuscar;
     @FXML private Button btnVolver;
 
-    // === TABS ===
-    @FXML private TabPane tabPane;
-    @FXML private Tab tabMensual;
-    @FXML private Tab tabSemanal;
-    @FXML private Tab tabAnual;
-
-    // === TAB MENSUAL ===
+    // TAB MENSUAL - Labels
     @FXML private Label lblMensualTotal;
     @FXML private Label lblMensualPromedio;
     @FXML private Label lblMensualDias;
     @FXML private Label lblMensualMax;
+
+    // TAB MENSUAL - Gráfico
     @FXML private BarChart<String, Number> chartMensualBarras;
     @FXML private CategoryAxis xAxisMensual;
     @FXML private NumberAxis yAxisMensual;
-    @FXML private TableView<EstadisticaDiaDTO> tableMensual;
-    @FXML private TableColumn<EstadisticaDiaDTO, String> colMensualFecha;
-    @FXML private TableColumn<EstadisticaDiaDTO, String> colMensualDia;
-    @FXML private TableColumn<EstadisticaDiaDTO, Double> colMensualHoras;
-    @FXML private TableColumn<EstadisticaDiaDTO, String> colMensualEstado;
 
-    // === TAB SEMANAL ===
-    @FXML private Label lblSemanalTotal;
-    @FXML private Label lblSemanalPromedio;
-    @FXML private Label lblSemanalSemanas;
-    @FXML private Label lblSemanalMejor;
-    @FXML private BarChart<String, Number> chartSemanalBarras;
-    @FXML private CategoryAxis xAxisSemanal;
-    @FXML private NumberAxis yAxisSemanal;
-    @FXML private PieChart chartSemanalPie;
-    @FXML private TableView<EstadisticaSemanaDTO> tableSemanal;
-    @FXML private TableColumn<EstadisticaSemanaDTO, Integer> colSemanalNumero;
-    @FXML private TableColumn<EstadisticaSemanaDTO, String> colSemanalRango;
-    @FXML private TableColumn<EstadisticaSemanaDTO, Integer> colSemanalDias;
-    @FXML private TableColumn<EstadisticaSemanaDTO, Double> colSemanalHoras;
-    @FXML private TableColumn<EstadisticaSemanaDTO, Double> colSemanalPromedio;
-
-    // === TAB ANUAL ===
-    @FXML private Label lblAnualTotal;
-    @FXML private Label lblAnualPromedio;
-    @FXML private Label lblAnualMeses;
-    @FXML private Label lblAnualMejor;
-    @FXML private BarChart<String, Number> chartAnualBarras;
-    @FXML private CategoryAxis xAxisAnual;
-    @FXML private NumberAxis yAxisAnual;
-    @FXML private LineChart<String, Number> chartAnualLinea;
-    @FXML private CategoryAxis xAxisAnualLinea;
-    @FXML private NumberAxis yAxisAnualLinea;
-    @FXML private TableView<EstadisticaMesDTO> tableAnual;
-    @FXML private TableColumn<EstadisticaMesDTO, String> colAnualMes;
-    @FXML private TableColumn<EstadisticaMesDTO, Integer> colAnualDias;
-    @FXML private TableColumn<EstadisticaMesDTO, Double> colAnualHoras;
-    @FXML private TableColumn<EstadisticaMesDTO, Double> colAnualPromedio;
+    // TAB MENSUAL - Tabla
+    @FXML private TableView<DiaEstadistica> tableMensual;
+    @FXML private TableColumn<DiaEstadistica, String> colDiaFecha;
+    @FXML private TableColumn<DiaEstadistica, String> colDiaSemana;
+    @FXML private TableColumn<DiaEstadistica, String> colDiaHoras;
+    @FXML private TableColumn<DiaEstadistica, String> colDiaEstado;
 
     private Trabajador trabajadorActual;
-    private FichajeDAO fichajeDAO = new FichajeDAO();
+    private final FichajeDAO fichajeDAO = new FichajeDAO();
 
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
+        System.out.println("📊 MisEstadisticasController inicializado para: " + trabajador.getNombreCompleto());
 
-        // Configurar ComboBox de meses
-        cbMes.setItems(FXCollections.observableArrayList(
-                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-        ));
-        cbMes.setValue(obtenerNombreMes(LocalDate.now().getMonthValue()));
-
-        // Configurar ComboBox de años (últimos 5 años)
-        ObservableList<Integer> anios = FXCollections.observableArrayList();
-        int anioActual = LocalDate.now().getYear();
-        for (int i = anioActual; i >= anioActual - 5; i--) {
-            anios.add(i);
-        }
-        cbAnio.setItems(anios);
-        cbAnio.setValue(anioActual);
-
-        // Configurar tablas
-        configurarTablas();
-
-        // Cargar datos iniciales
+        configurarTabla();
+        configurarMeses();
+        configurarAnios();
         cargarEstadisticas();
-
-        System.out.println("✅ Vista 'Mis Estadísticas' cargada para: " + trabajador.getNombre());
     }
 
-    private void configurarTablas() {
-        // === TABLA MENSUAL ===
-        colMensualFecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
-        colMensualDia.setCellValueFactory(new PropertyValueFactory<>("diaSemana"));
-        colMensualHoras.setCellValueFactory(new PropertyValueFactory<>("horas"));
-        colMensualEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
+    private void configurarTabla() {
+        if (colDiaFecha != null) {
+            colDiaFecha.setCellValueFactory(cellData ->
+                    new javafx.beans.property.SimpleStringProperty(cellData.getValue().fecha));
+        }
 
-        colMensualHoras.setCellFactory(col -> new TableCell<EstadisticaDiaDTO, Double>() {
-            @Override
-            protected void updateItem(Double horas, boolean empty) {
-                super.updateItem(horas, empty);
-                if (empty || horas == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(formatearHoras(horas));
-                    setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        if (colDiaSemana != null) {
+            colDiaSemana.setCellValueFactory(cellData ->
+                    new javafx.beans.property.SimpleStringProperty(cellData.getValue().diaSemana));
+        }
+
+        if (colDiaHoras != null) {
+            colDiaHoras.setCellValueFactory(cellData ->
+                    new javafx.beans.property.SimpleStringProperty(cellData.getValue().horas));
+        }
+
+        if (colDiaEstado != null) {
+            colDiaEstado.setCellValueFactory(cellData ->
+                    new javafx.beans.property.SimpleStringProperty(cellData.getValue().estado));
+        }
+    }
+
+    private void configurarMeses() {
+        if (cbMes == null) {
+            System.out.println("⚠️ cbMes no disponible");
+            return;
+        }
+
+        cbMes.getItems().clear();
+
+        for (Month mes : Month.values()) {
+            String nombreMes = mes.getDisplayName(TextStyle.FULL, new Locale("es", "ES"));
+            nombreMes = nombreMes.substring(0, 1).toUpperCase() + nombreMes.substring(1);
+            cbMes.getItems().add(nombreMes);
+        }
+
+        int mesActual = LocalDate.now().getMonthValue();
+        cbMes.setValue(cbMes.getItems().get(mesActual - 1));
+
+        System.out.println("✅ ComboBox meses configurado");
+    }
+
+    private void configurarAnios() {
+        if (cbAnio == null) {
+            System.out.println("⚠️ cbAnio no disponible");
+            return;
+        }
+
+        cbAnio.getItems().clear();
+
+        int anioActual = LocalDate.now().getYear();
+
+        for (int i = anioActual; i >= anioActual - 5; i--) {
+            cbAnio.getItems().add(i);
+        }
+
+        cbAnio.setValue(anioActual);
+
+        System.out.println("✅ ComboBox años configurado");
+    }
+
+    private void cargarEstadisticas() {
+        if (cbMes == null || cbAnio == null) {
+            System.out.println("⚠️ ComboBoxes no disponibles");
+            return;
+        }
+
+        String mesSeleccionado = cbMes.getValue();
+        Integer anioSeleccionado = cbAnio.getValue();
+
+        if (mesSeleccionado == null || anioSeleccionado == null) {
+            AlertasUtil.mostrarError("Error", "Seleccione mes y año");
+            return;
+        }
+
+        int numeroMes = cbMes.getItems().indexOf(mesSeleccionado) + 1;
+
+        LocalDate primerDia = LocalDate.of(anioSeleccionado, numeroMes, 1);
+        LocalDate ultimoDia = primerDia.withDayOfMonth(primerDia.lengthOfMonth());
+
+        System.out.println("📊 Cargando estadísticas:");
+        System.out.println("   Mes: " + mesSeleccionado + " (" + numeroMes + ")");
+        System.out.println("   Año: " + anioSeleccionado);
+        System.out.println("   Rango: " + primerDia + " - " + ultimoDia);
+
+        try {
+            List<Fichaje> fichajes = fichajeDAO.buscarPorTrabajadorYRango(
+                    trabajadorActual.getId(),
+                    primerDia,
+                    ultimoDia
+            );
+
+            // Calcular estadísticas por día (CORREGIDO)
+            Map<LocalDate, Double> horasPorDia = calcularHorasPorDiaCorregido(fichajes);
+
+            // Actualizar labels
+            actualizarLabels(horasPorDia);
+
+            // Actualizar gráfico (CORREGIDO)
+            actualizarGraficoCorregido(horasPorDia);
+
+            // Actualizar tabla
+            actualizarTabla(horasPorDia, fichajes);
+
+            System.out.println("✅ Estadísticas cargadas");
+
+        } catch (Exception e) {
+            System.err.println("💥 ERROR: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "No se pudieron cargar estadísticas");
+        }
+    }
+
+    /**
+     * CORREGIDO: Calcula horas por día sin valores negativos.
+     */
+    private Map<LocalDate, Double> calcularHorasPorDiaCorregido(List<Fichaje> fichajes) {
+        Map<LocalDate, List<Fichaje>> porDia = fichajes.stream()
+                .collect(Collectors.groupingBy(f -> f.getFechaHora().toLocalDate()));
+
+        Map<LocalDate, Double> horasPorDia = new LinkedHashMap<>();
+
+        for (Map.Entry<LocalDate, List<Fichaje>> entry : porDia.entrySet()) {
+            List<Fichaje> fichajesDia = entry.getValue();
+
+            // CRÍTICO: Ordenar por hora ANTES de separar
+            fichajesDia.sort(Comparator.comparing(Fichaje::getFechaHora));
+
+            // Separar entradas y salidas YA ORDENADAS
+            List<Fichaje> entradas = new ArrayList<>();
+            List<Fichaje> salidas = new ArrayList<>();
+
+            for (Fichaje f : fichajesDia) {
+                if (f.getTipo() == TipoFichaje.ENTRADA) {
+                    entradas.add(f);
+                } else if (f.getTipo() == TipoFichaje.SALIDA) {
+                    salidas.add(f);
                 }
             }
-        });
 
-        colMensualEstado.setCellFactory(col -> new TableCell<EstadisticaDiaDTO, String>() {
-            @Override
-            protected void updateItem(String estado, boolean empty) {
-                super.updateItem(estado, empty);
-                if (empty || estado == null) {
-                    setText(null);
-                    setStyle("");
+            double horasDia = 0.0;
+            int pares = Math.min(entradas.size(), salidas.size());
+
+            for (int i = 0; i < pares; i++) {
+                double horas = HorasFormateador.calcularHoras(
+                        entradas.get(i).getFechaHora(),
+                        salidas.get(i).getFechaHora()
+                );
+
+                // VALIDACIÓN: Solo sumar si es positivo
+                if (horas >= 0) {
+                    horasDia += horas;
                 } else {
-                    setText(estado);
-                    if (estado.equals("✅ Completo")) {
-                        setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                    } else {
-                        setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    }
+                    System.out.println("   ⚠️ Horas negativas en " + entry.getKey() +
+                            ": " + entradas.get(i).getFechaHora().toLocalTime() +
+                            " - " + salidas.get(i).getFechaHora().toLocalTime() +
+                            " (ignorado)");
                 }
             }
-        });
 
-        // === TABLA SEMANAL ===
-        colSemanalNumero.setCellValueFactory(new PropertyValueFactory<>("numeroSemana"));
-        colSemanalRango.setCellValueFactory(new PropertyValueFactory<>("rangoFechas"));
-        colSemanalDias.setCellValueFactory(new PropertyValueFactory<>("diasTrabajados"));
-        colSemanalHoras.setCellValueFactory(new PropertyValueFactory<>("totalHoras"));
-        colSemanalPromedio.setCellValueFactory(new PropertyValueFactory<>("promedioDiario"));
+            horasPorDia.put(entry.getKey(), horasDia);
+        }
 
-        colSemanalHoras.setCellFactory(col -> new TableCell<EstadisticaSemanaDTO, Double>() {
-            @Override
-            protected void updateItem(Double horas, boolean empty) {
-                super.updateItem(horas, empty);
-                if (empty || horas == null) {
-                    setText(null);
-                } else {
-                    setText(formatearHoras(horas));
-                    setStyle("-fx-font-weight: bold; -fx-text-fill: #3498db;");
-                }
-            }
-        });
+        return horasPorDia;
+    }
 
-        colSemanalPromedio.setCellFactory(col -> new TableCell<EstadisticaSemanaDTO, Double>() {
-            @Override
-            protected void updateItem(Double promedio, boolean empty) {
-                super.updateItem(promedio, empty);
-                if (empty || promedio == null) {
-                    setText(null);
-                } else {
-                    setText(formatearHoras(promedio));
-                    setStyle("-fx-font-weight: bold; -fx-text-fill: #27ae60;");
-                }
-            }
-        });
+    private void actualizarLabels(Map<LocalDate, Double> horasPorDia) {
+        double totalHoras = horasPorDia.values().stream().mapToDouble(Double::doubleValue).sum();
+        int diasTrabajados = horasPorDia.size();
+        double promedioDiario = diasTrabajados > 0 ? totalHoras / diasTrabajados : 0.0;
+        double diaMaximo = horasPorDia.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
 
-        // === TABLA ANUAL ===
-        colAnualMes.setCellValueFactory(new PropertyValueFactory<>("nombreMes"));
-        colAnualDias.setCellValueFactory(new PropertyValueFactory<>("diasTrabajados"));
-        colAnualHoras.setCellValueFactory(new PropertyValueFactory<>("totalHoras"));
-        colAnualPromedio.setCellValueFactory(new PropertyValueFactory<>("promedioDiario"));
+        if (lblMensualTotal != null) {
+            lblMensualTotal.setText(HorasFormateador.formatearHoras(totalHoras));
+        }
 
-        colAnualHoras.setCellFactory(col -> new TableCell<EstadisticaMesDTO, Double>() {
-            @Override
-            protected void updateItem(Double horas, boolean empty) {
-                super.updateItem(horas, empty);
-                if (empty || horas == null) {
-                    setText(null);
-                } else {
-                    setText(formatearHoras(horas));
-                    setStyle("-fx-font-weight: bold; -fx-text-fill: #3498db;");
-                }
-            }
-        });
+        if (lblMensualPromedio != null) {
+            lblMensualPromedio.setText(HorasFormateador.formatearHorasDecimal(promedioDiario));
+        }
 
-        colAnualPromedio.setCellFactory(col -> new TableCell<EstadisticaMesDTO, Double>() {
-            @Override
-            protected void updateItem(Double promedio, boolean empty) {
-                super.updateItem(promedio, empty);
-                if (empty || promedio == null) {
-                    setText(null);
-                } else {
-                    setText(formatearHoras(promedio));
-                    setStyle("-fx-font-weight: bold; -fx-text-fill: #27ae60;");
-                }
-            }
-        });
+        if (lblMensualDias != null) {
+            lblMensualDias.setText(String.valueOf(diasTrabajados));
+        }
+
+        if (lblMensualMax != null) {
+            lblMensualMax.setText(HorasFormateador.formatearHoras(diaMaximo));
+        }
+
+        System.out.println("📊 Resumen:");
+        System.out.println("   Total: " + HorasFormateador.formatearHoras(totalHoras));
+        System.out.println("   Días: " + diasTrabajados);
+        System.out.println("   Promedio: " + HorasFormateador.formatearHorasDecimal(promedioDiario));
+        System.out.println("   Máximo: " + HorasFormateador.formatearHoras(diaMaximo));
+    }
+
+    /**
+     * CORREGIDO: Actualiza gráfico correctamente la primera vez.
+     */
+    private void actualizarGraficoCorregido(Map<LocalDate, Double> horasPorDia) {
+        if (chartMensualBarras == null) {
+            System.out.println("⚠️ Gráfico no disponible");
+            return;
+        }
+
+        // CRÍTICO: Limpiar COMPLETAMENTE el gráfico
+        chartMensualBarras.getData().clear();
+
+        // CRÍTICO: Forzar layout para que JavaFX actualice el eje X
+        chartMensualBarras.layout();
+
+        // Crear nueva serie
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Horas");
+
+        System.out.println("📈 Actualizando gráfico con " + horasPorDia.size() + " días");
+
+        // Ordenar por fecha y agregar al gráfico
+        horasPorDia.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    String fecha = entry.getKey().getDayOfMonth() + "/" + entry.getKey().getMonthValue();
+                    double horas = entry.getValue();
+                    series.getData().add(new XYChart.Data<>(fecha, horas));
+                    System.out.println("   - " + fecha + ": " + HorasFormateador.formatearHoras(horas));
+                });
+
+        // Agregar serie al gráfico
+        chartMensualBarras.getData().add(series);
+
+        // CRÍTICO: Forzar un segundo layout después de agregar datos
+        chartMensualBarras.layout();
+
+        System.out.println("✅ Gráfico actualizado correctamente");
+    }
+
+    private void actualizarTabla(Map<LocalDate, Double> horasPorDia, List<Fichaje> fichajes) {
+        if (tableMensual == null) return;
+
+        List<DiaEstadistica> estadisticas = new ArrayList<>();
+
+        for (Map.Entry<LocalDate, Double> entry : horasPorDia.entrySet()) {
+            LocalDate fecha = entry.getKey();
+            Double horas = entry.getValue();
+
+            // Verificar si el día está incompleto
+            long entradas = fichajes.stream()
+                    .filter(f -> f.getFechaHora().toLocalDate().equals(fecha))
+                    .filter(f -> f.getTipo() == TipoFichaje.ENTRADA)
+                    .count();
+
+            long salidas = fichajes.stream()
+                    .filter(f -> f.getFechaHora().toLocalDate().equals(fecha))
+                    .filter(f -> f.getTipo() == TipoFichaje.SALIDA)
+                    .count();
+
+            String estado = (entradas == salidas) ? "Completo" : "Incompleto";
+
+            DayOfWeek dia = fecha.getDayOfWeek();
+            String diaSemana = dia.getDisplayName(TextStyle.FULL, new Locale("es", "ES"));
+            diaSemana = diaSemana.substring(0, 1).toUpperCase() + diaSemana.substring(1);
+
+            estadisticas.add(new DiaEstadistica(
+                    fecha.toString(),
+                    diaSemana,
+                    HorasFormateador.formatearHoras(horas),
+                    estado
+            ));
+        }
+
+        // Ordenar por fecha descendente
+        estadisticas.sort((a, b) -> b.fecha.compareTo(a.fecha));
+
+        tableMensual.setItems(FXCollections.observableArrayList(estadisticas));
+
+        System.out.println("📋 Tabla actualizada con " + estadisticas.size() + " filas");
     }
 
     @FXML
     private void handleBuscar() {
+        System.out.println("🔍 Búsqueda manual");
         cargarEstadisticas();
-    }
-
-    private void cargarEstadisticas() {
-        int mes = cbMes.getSelectionModel().getSelectedIndex() + 1;
-        int anio = cbAnio.getValue();
-
-        System.out.println("🔍 Cargando estadísticas - Mes: " + mes + ", Año: " + anio);
-
-        cargarEstadisticasMensuales(mes, anio);
-        cargarEstadisticasSemanales(mes, anio);
-        cargarEstadisticasAnuales(anio);
-    }
-
-    // ============================================
-    // ESTADÍSTICAS MENSUALES
-    // ============================================
-    private void cargarEstadisticasMensuales(int mes, int anio) {
-        LocalDate fechaInicio = LocalDate.of(anio, mes, 1);
-        LocalDate fechaFin = fechaInicio.with(TemporalAdjusters.lastDayOfMonth());
-
-        List<Fichaje> fichajes = fichajeDAO.buscarPorTrabajadorYRango(
-                trabajadorActual.getId(), fechaInicio, fechaFin
-        );
-
-        Map<LocalDate, List<Fichaje>> fichajesPorDia = agruparPorDia(fichajes);
-        Map<LocalDate, Double> horasPorDia = calcularHorasPorDia(fichajesPorDia);
-
-        // Calcular estadísticas
-        double totalHoras = horasPorDia.values().stream().mapToDouble(Double::doubleValue).sum();
-        int diasTrabajados = horasPorDia.size();
-        double promedio = diasTrabajados > 0 ? totalHoras / diasTrabajados : 0.0;
-        double maxHoras = horasPorDia.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-
-        // Actualizar labels
-        lblMensualTotal.setText(formatearHoras(totalHoras));
-        lblMensualPromedio.setText(formatearHoras(promedio));
-        lblMensualDias.setText(String.valueOf(diasTrabajados));
-        lblMensualMax.setText(formatearHoras(maxHoras));
-
-        // Actualizar gráfico de barras
-        actualizarGraficoMensual(horasPorDia);
-
-        // Actualizar tabla
-        actualizarTablaMensual(fichajesPorDia, horasPorDia);
-    }
-
-    private void actualizarGraficoMensual(Map<LocalDate, Double> horasPorDia) {
-        chartMensualBarras.getData().clear();
-
-        // ✅ FIX: Crear y establecer categorías MANUALMENTE
-        ObservableList<String> categorias = FXCollections.observableArrayList();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
-
-        XYChart.Series<String, Number> serie = new XYChart.Series<>();
-        serie.setName("Horas Trabajadas");
-
-        horasPorDia.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    String fecha = entry.getKey().format(formatter);
-                    categorias.add(fecha);  // Añadir categoría a la lista
-                    serie.getData().add(new XYChart.Data<>(fecha, entry.getValue()));
-                });
-
-        // Establecer categorías ANTES de añadir la serie
-        xAxisMensual.setCategories(categorias);
-        chartMensualBarras.getData().add(serie);
-    }
-
-    private void actualizarTablaMensual(Map<LocalDate, List<Fichaje>> fichajesPorDia,
-                                        Map<LocalDate, Double> horasPorDia) {
-        ObservableList<EstadisticaDiaDTO> items = FXCollections.observableArrayList();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        horasPorDia.entrySet().stream()
-                .sorted(Map.Entry.<LocalDate, Double>comparingByKey().reversed())
-                .forEach(entry -> {
-                    LocalDate fecha = entry.getKey();
-                    Double horas = entry.getValue();
-
-                    List<Fichaje> fichajesDia = fichajesPorDia.get(fecha);
-                    boolean completo = esJornadaCompleta(fichajesDia);
-
-                    String diaSemana = fecha.getDayOfWeek()
-                            .getDisplayName(TextStyle.FULL, new Locale("es", "ES"));
-
-                    EstadisticaDiaDTO dto = new EstadisticaDiaDTO(
-                            fecha.format(formatter),
-                            diaSemana,
-                            horas,
-                            completo ? "✅ Completo" : "⚠️ Incompleto"
-                    );
-                    items.add(dto);
-                });
-
-        tableMensual.setItems(items);
-    }
-
-    // ============================================
-    // ESTADÍSTICAS SEMANALES
-    // ============================================
-    private void cargarEstadisticasSemanales(int mes, int anio) {
-        LocalDate fechaInicio = LocalDate.of(anio, mes, 1);
-        LocalDate fechaFin = fechaInicio.with(TemporalAdjusters.lastDayOfMonth());
-
-        List<Fichaje> fichajes = fichajeDAO.buscarPorTrabajadorYRango(
-                trabajadorActual.getId(), fechaInicio, fechaFin
-        );
-
-        Map<LocalDate, List<Fichaje>> fichajesPorDia = agruparPorDia(fichajes);
-        Map<LocalDate, Double> horasPorDia = calcularHorasPorDia(fichajesPorDia);
-
-        // Agrupar por semana
-        WeekFields weekFields = WeekFields.of(Locale.getDefault());
-        Map<Integer, List<Map.Entry<LocalDate, Double>>> horasPorSemana = horasPorDia.entrySet().stream()
-                .collect(Collectors.groupingBy(entry -> entry.getKey().get(weekFields.weekOfMonth())));
-
-        // Calcular totales por semana
-        Map<Integer, Double> totalesPorSemana = new LinkedHashMap<>();
-        Map<Integer, Integer> diasPorSemana = new LinkedHashMap<>();
-        Map<Integer, String> rangosPorSemana = new LinkedHashMap<>();
-
-        horasPorSemana.forEach((semana, dias) -> {
-            double total = dias.stream().mapToDouble(Map.Entry::getValue).sum();
-            totalesPorSemana.put(semana, total);
-            diasPorSemana.put(semana, dias.size());
-
-            LocalDate primerDia = dias.stream().map(Map.Entry::getKey).min(LocalDate::compareTo).orElse(fechaInicio);
-            LocalDate ultimoDia = dias.stream().map(Map.Entry::getKey).max(LocalDate::compareTo).orElse(fechaFin);
-            rangosPorSemana.put(semana, primerDia.getDayOfMonth() + " - " + ultimoDia.getDayOfMonth());
-        });
-
-        // Calcular estadísticas
-        double totalHoras = totalesPorSemana.values().stream().mapToDouble(Double::doubleValue).sum();
-        int totalSemanas = totalesPorSemana.size();
-        double promedio = totalSemanas > 0 ? totalHoras / totalSemanas : 0.0;
-        double mejorSemana = totalesPorSemana.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-
-        // Actualizar labels
-        lblSemanalTotal.setText(formatearHoras(totalHoras));
-        lblSemanalPromedio.setText(formatearHoras(promedio));
-        lblSemanalSemanas.setText(String.valueOf(totalSemanas));
-        lblSemanalMejor.setText(formatearHoras(mejorSemana));
-
-        // Actualizar gráficos
-        actualizarGraficoSemanal(totalesPorSemana);
-        actualizarGraficoSemanalPie(totalesPorSemana);
-
-        // Actualizar tabla
-        actualizarTablaSemanal(totalesPorSemana, diasPorSemana, rangosPorSemana);
-    }
-
-    private void actualizarGraficoSemanal(Map<Integer, Double> totalesPorSemana) {
-        chartSemanalBarras.getData().clear();
-
-        // ✅ FIX: Crear y establecer categorías MANUALMENTE
-        ObservableList<String> categorias = FXCollections.observableArrayList();
-
-        XYChart.Series<String, Number> serie = new XYChart.Series<>();
-        serie.setName("Horas por Semana");
-
-        totalesPorSemana.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    String categoria = "Semana " + entry.getKey();
-                    categorias.add(categoria);  // Añadir categoría a la lista
-                    serie.getData().add(new XYChart.Data<>(categoria, entry.getValue()));
-                });
-
-        // Establecer categorías ANTES de añadir la serie
-        xAxisSemanal.setCategories(categorias);
-        chartSemanalBarras.getData().add(serie);
-    }
-
-    private void actualizarGraficoSemanalPie(Map<Integer, Double> totalesPorSemana) {
-        chartSemanalPie.getData().clear();
-
-        totalesPorSemana.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    PieChart.Data data = new PieChart.Data(
-                            "Semana " + entry.getKey() + " (" + formatearHoras(entry.getValue()) + ")",
-                            entry.getValue()
-                    );
-                    chartSemanalPie.getData().add(data);
-                });
-    }
-
-    private void actualizarTablaSemanal(Map<Integer, Double> totalesPorSemana,
-                                        Map<Integer, Integer> diasPorSemana,
-                                        Map<Integer, String> rangosPorSemana) {
-        ObservableList<EstadisticaSemanaDTO> items = FXCollections.observableArrayList();
-
-        totalesPorSemana.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    int semana = entry.getKey();
-                    double total = entry.getValue();
-                    int dias = diasPorSemana.getOrDefault(semana, 0);
-                    double promedio = dias > 0 ? total / dias : 0.0;
-
-                    EstadisticaSemanaDTO dto = new EstadisticaSemanaDTO(
-                            semana,
-                            rangosPorSemana.getOrDefault(semana, ""),
-                            dias,
-                            total,
-                            promedio
-                    );
-                    items.add(dto);
-                });
-
-        tableSemanal.setItems(items);
-    }
-
-    // ============================================
-    // ESTADÍSTICAS ANUALES
-    // ============================================
-    private void cargarEstadisticasAnuales(int anio) {
-        LocalDate fechaInicio = LocalDate.of(anio, 1, 1);
-        LocalDate fechaFin = LocalDate.of(anio, 12, 31);
-
-        List<Fichaje> fichajes = fichajeDAO.buscarPorTrabajadorYRango(
-                trabajadorActual.getId(), fechaInicio, fechaFin
-        );
-
-        Map<LocalDate, List<Fichaje>> fichajesPorDia = agruparPorDia(fichajes);
-        Map<LocalDate, Double> horasPorDia = calcularHorasPorDia(fichajesPorDia);
-
-        // Agrupar por mes
-        Map<Integer, Double> horasPorMes = new LinkedHashMap<>();
-        Map<Integer, Integer> diasPorMes = new LinkedHashMap<>();
-
-        for (int mes = 1; mes <= 12; mes++) {
-            int mesFinal = mes;
-            double totalMes = horasPorDia.entrySet().stream()
-                    .filter(entry -> entry.getKey().getMonthValue() == mesFinal)
-                    .mapToDouble(Map.Entry::getValue)
-                    .sum();
-
-            long diasMes = horasPorDia.keySet().stream()
-                    .filter(fecha -> fecha.getMonthValue() == mesFinal)
-                    .count();
-
-            horasPorMes.put(mes, totalMes);
-            diasPorMes.put(mes, (int) diasMes);
-        }
-
-        // Calcular estadísticas
-        double totalHoras = horasPorMes.values().stream().mapToDouble(Double::doubleValue).sum();
-        long mesesTrabajados = horasPorMes.values().stream().filter(h -> h > 0).count();
-        double promedio = mesesTrabajados > 0 ? totalHoras / mesesTrabajados : 0.0;
-        double mejorMes = horasPorMes.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-
-        // Actualizar labels
-        lblAnualTotal.setText(formatearHoras(totalHoras));
-        lblAnualPromedio.setText(formatearHoras(promedio));
-        lblAnualMeses.setText(String.valueOf(mesesTrabajados));
-        lblAnualMejor.setText(formatearHoras(mejorMes));
-
-        // Actualizar gráficos
-        actualizarGraficoAnualBarras(horasPorMes);
-        actualizarGraficoAnualLinea(horasPorMes);
-
-        // Actualizar tabla
-        actualizarTablaAnual(horasPorMes, diasPorMes);
-    }
-
-    private void actualizarGraficoAnualBarras(Map<Integer, Double> horasPorMes) {
-        chartAnualBarras.getData().clear();
-
-        // ✅ FIX: Crear y establecer categorías MANUALMENTE
-        ObservableList<String> categorias = FXCollections.observableArrayList();
-
-        XYChart.Series<String, Number> serie = new XYChart.Series<>();
-        serie.setName("Horas por Mes");
-
-        horasPorMes.forEach((mes, horas) -> {
-            String nombreMes = obtenerNombreMes(mes);
-            categorias.add(nombreMes);  // Añadir categoría a la lista
-            serie.getData().add(new XYChart.Data<>(nombreMes, horas));
-        });
-
-        // Establecer categorías ANTES de añadir la serie
-        xAxisAnual.setCategories(categorias);
-        chartAnualBarras.getData().add(serie);
-    }
-
-    private void actualizarGraficoAnualLinea(Map<Integer, Double> horasPorMes) {
-        chartAnualLinea.getData().clear();
-
-        // ✅ FIX: Crear y establecer categorías MANUALMENTE
-        ObservableList<String> categorias = FXCollections.observableArrayList();
-
-        XYChart.Series<String, Number> serie = new XYChart.Series<>();
-        serie.setName("Evolución Anual");
-
-        horasPorMes.forEach((mes, horas) -> {
-            String nombreMes = obtenerNombreMes(mes);
-            categorias.add(nombreMes);  // Añadir categoría a la lista
-            serie.getData().add(new XYChart.Data<>(nombreMes, horas));
-        });
-
-        // Establecer categorías ANTES de añadir la serie
-        xAxisAnualLinea.setCategories(categorias);
-        chartAnualLinea.getData().add(serie);
-    }
-
-    private void actualizarTablaAnual(Map<Integer, Double> horasPorMes, Map<Integer, Integer> diasPorMes) {
-        ObservableList<EstadisticaMesDTO> items = FXCollections.observableArrayList();
-
-        horasPorMes.forEach((mes, horas) -> {
-            if (horas > 0) { // Solo mostrar meses con datos
-                int dias = diasPorMes.getOrDefault(mes, 0);
-                double promedio = dias > 0 ? horas / dias : 0.0;
-
-                EstadisticaMesDTO dto = new EstadisticaMesDTO(
-                        obtenerNombreMes(mes),
-                        dias,
-                        horas,
-                        promedio
-                );
-                items.add(dto);
-            }
-        });
-
-        tableAnual.setItems(items);
-    }
-
-    // ============================================
-    // MÉTODOS AUXILIARES
-    // ============================================
-    private Map<LocalDate, List<Fichaje>> agruparPorDia(List<Fichaje> fichajes) {
-        return fichajes.stream()
-                .collect(Collectors.groupingBy(f -> f.getFechaHora().toLocalDate()));
-    }
-
-    private Map<LocalDate, Double> calcularHorasPorDia(Map<LocalDate, List<Fichaje>> fichajesPorDia) {
-        Map<LocalDate, Double> resultado = new LinkedHashMap<>();
-
-        fichajesPorDia.forEach((fecha, fichajes) -> {
-            fichajes.sort(Comparator.comparing(Fichaje::getFechaHora));
-
-            double totalDia = 0.0;
-            LocalDateTime ultimaEntrada = null;
-
-            for (Fichaje f : fichajes) {
-                if (f.getTipo().name().equals("ENTRADA")) {
-                    ultimaEntrada = f.getFechaHora();
-                } else if (f.getTipo().name().equals("SALIDA") && ultimaEntrada != null) {
-                    Duration duracion = Duration.between(ultimaEntrada, f.getFechaHora());
-                    totalDia += duracion.toMinutes() / 60.0;
-                    ultimaEntrada = null;
-                }
-            }
-
-            if (totalDia > 0) {
-                resultado.put(fecha, totalDia);
-            }
-        });
-
-        return resultado;
-    }
-
-    private boolean esJornadaCompleta(List<Fichaje> fichajes) {
-        if (fichajes.isEmpty()) return false;
-
-        fichajes.sort(Comparator.comparing(Fichaje::getFechaHora));
-
-        boolean tieneEntrada = fichajes.stream().anyMatch(f -> f.getTipo().name().equals("ENTRADA"));
-        boolean tieneSalida = fichajes.stream().anyMatch(f -> f.getTipo().name().equals("SALIDA"));
-
-        // Verificar que la última acción sea una SALIDA
-        Fichaje ultimo = fichajes.get(fichajes.size() - 1);
-        boolean terminaEnSalida = ultimo.getTipo().name().equals("SALIDA");
-
-        return tieneEntrada && tieneSalida && terminaEnSalida;
-    }
-
-    private String obtenerNombreMes(int mes) {
-        String[] meses = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
-        return meses[mes - 1];
-    }
-
-    /**
-     * Convierte horas decimales a formato "Xh Ym"
-     * Ejemplo: 8.92 → "8h 55m"
-     */
-    private String formatearHoras(double horasDecimal) {
-        int horas = (int) horasDecimal;
-        int minutos = (int) Math.round((horasDecimal - horas) * 60);
-
-        // Si los minutos son 60, ajustar a la siguiente hora
-        if (minutos == 60) {
-            horas++;
-            minutos = 0;
-        }
-
-        if (minutos == 0) {
-            return horas + "h";
-        } else {
-            return horas + "h " + minutos + "m";
-        }
     }
 
     @FXML
     private void handleVolver() {
-        System.out.println("🔙 Volviendo al dashboard...");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.DashboardController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) btnVolver.getScene().getWindow();
-            stage.setScene(new Scene(root, 800, 600));
-            stage.setTitle("Control Horario - Dashboard");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al volver al dashboard: " + e.getMessage());
-            e.printStackTrace();
-        }
+        NavegacionUtil.abrirDashboard(btnVolver, trabajadorActual);
     }
 
-    // ============================================
-    // DTOs INTERNOS
-    // ============================================
-    public static class EstadisticaDiaDTO {
-        private String fecha;
-        private String diaSemana;
-        private Double horas;
-        private String estado;
+    /**
+     * Clase interna para representar estadísticas de un día.
+     */
+    public static class DiaEstadistica {
+        private final String fecha;
+        private final String diaSemana;
+        private final String horas;
+        private final String estado;
 
-        public EstadisticaDiaDTO(String fecha, String diaSemana, Double horas, String estado) {
+        public DiaEstadistica(String fecha, String diaSemana, String horas, String estado) {
             this.fecha = fecha;
             this.diaSemana = diaSemana;
             this.horas = horas;
@@ -665,50 +371,7 @@ public class MisEstadisticasController {
 
         public String getFecha() { return fecha; }
         public String getDiaSemana() { return diaSemana; }
-        public Double getHoras() { return horas; }
+        public String getHoras() { return horas; }
         public String getEstado() { return estado; }
-    }
-
-    public static class EstadisticaSemanaDTO {
-        private Integer numeroSemana;
-        private String rangoFechas;
-        private Integer diasTrabajados;
-        private Double totalHoras;
-        private Double promedioDiario;
-
-        public EstadisticaSemanaDTO(Integer numeroSemana, String rangoFechas, Integer diasTrabajados,
-                                    Double totalHoras, Double promedioDiario) {
-            this.numeroSemana = numeroSemana;
-            this.rangoFechas = rangoFechas;
-            this.diasTrabajados = diasTrabajados;
-            this.totalHoras = totalHoras;
-            this.promedioDiario = promedioDiario;
-        }
-
-        public Integer getNumeroSemana() { return numeroSemana; }
-        public String getRangoFechas() { return rangoFechas; }
-        public Integer getDiasTrabajados() { return diasTrabajados; }
-        public Double getTotalHoras() { return totalHoras; }
-        public Double getPromedioDiario() { return promedioDiario; }
-    }
-
-    public static class EstadisticaMesDTO {
-        private String nombreMes;
-        private Integer diasTrabajados;
-        private Double totalHoras;
-        private Double promedioDiario;
-
-        public EstadisticaMesDTO(String nombreMes, Integer diasTrabajados,
-                                 Double totalHoras, Double promedioDiario) {
-            this.nombreMes = nombreMes;
-            this.diasTrabajados = diasTrabajados;
-            this.totalHoras = totalHoras;
-            this.promedioDiario = promedioDiario;
-        }
-
-        public String getNombreMes() { return nombreMes; }
-        public Integer getDiasTrabajados() { return diasTrabajados; }
-        public Double getTotalHoras() { return totalHoras; }
-        public Double getPromedioDiario() { return promedioDiario; }
     }
 }

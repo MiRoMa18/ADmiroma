@@ -7,7 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import org.example.model.Trabajador;
+import org.example.model.entity.Trabajador;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;

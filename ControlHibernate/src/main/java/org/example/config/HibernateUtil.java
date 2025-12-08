@@ -3,24 +3,50 @@ package org.example.config;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-
+/**
+ * Utilidad para gestionar la SessionFactory de Hibernate.
+ * Patrón Singleton para garantizar una única instancia.
+ */
 public class HibernateUtil {
-    private static final SessionFactory sessionFactory = buildSessionFactory();
 
-    private static SessionFactory buildSessionFactory() {
+    private static SessionFactory sessionFactory;
+
+    static {
         try {
-            return new Configuration().configure().buildSessionFactory();
+            System.out.println("🔧 Inicializando Hibernate...");
+
+            // Crear SessionFactory desde hibernate.cfg.xml
+            sessionFactory = new Configuration()
+                    .configure("hibernate.cfg.xml")
+                    .buildSessionFactory();
+
+            System.out.println("✅ Hibernate inicializado correctamente");
+
         } catch (Throwable ex) {
-            System.err.println("Error al crear SessionFactory: " + ex);
+            System.err.println("💥 ERROR: Fallo al crear SessionFactory");
+            ex.printStackTrace();
             throw new ExceptionInInitializerError(ex);
         }
     }
 
+    /**
+     * Obtiene la SessionFactory de Hibernate.
+     *
+     * @return SessionFactory única del sistema
+     */
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
 
+    /**
+     * Cierra la SessionFactory al finalizar la aplicación.
+     * Debe llamarse al cerrar el programa.
+     */
     public static void shutdown() {
-        getSessionFactory().close();
+        if (sessionFactory != null) {
+            System.out.println("🔧 Cerrando Hibernate...");
+            sessionFactory.close();
+            System.out.println("✅ Hibernate cerrado correctamente");
+        }
     }
 }

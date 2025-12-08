@@ -28,7 +28,7 @@
         <property name="hibernate.current_session_context_class">thread</property>
 
         <!-- MAPEO DE ENTIDADES - Añade aquí tus clases -->
-        <mapping class="org.example.model.Trabajador"/>
-        <mapping class="org.example.model.Fichaje"/>
+        <mapping class="org.example.model.entity.Trabajador"/>
+        <mapping class="org.example.model.entity.Fichaje"/>
     </session-factory>
 </hibernate-configuration>

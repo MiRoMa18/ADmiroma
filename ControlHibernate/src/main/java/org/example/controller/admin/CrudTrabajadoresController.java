@@ -1,43 +1,45 @@
 package org.example.controller.admin;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseButton;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.example.dao.FichajeDAO;
 import org.example.dao.TrabajadorDAO;
-import org.example.model.Rol;
-import org.example.model.Trabajador;
+import org.example.model.entity.Trabajador;
+import org.example.model.enums.Rol;
+import org.example.util.AlertasUtil;
+import org.example.util.NavegacionUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
+/**
+ * Controlador para el CRUD de trabajadores (ADMIN).
+ * CORREGIDO: Nombres coinciden con crud_trabajadores.fxml
+ */
 public class CrudTrabajadoresController {
 
-    // === FILTROS ===
+    // FILTROS
     @FXML private TextField txtBuscar;
-    @FXML private ComboBox<String> cbRol;
+    @FXML private ComboBox<String> cbRol;  // ← AGREGADO (no existía en controlador)
     @FXML private Button btnBuscar;
     @FXML private Button btnLimpiar;
 
-    // === BOTONES DE ACCIÓN ===
+    // BOTONES
     @FXML private Button btnNuevo;
     @FXML private Button btnEditar;
     @FXML private Button btnEliminar;
-    @FXML private Button btnRefrescar;
     @FXML private Button btnVolver;
+    @FXML private Button btnRefrescar;
 
-    // === TABLA ===
+    // TABLA
     @FXML private TableView<Trabajador> tableTrabajadores;
     @FXML private TableColumn<Trabajador, Integer> colId;
     @FXML private TableColumn<Trabajador, String> colNumeroTarjeta;
@@ -47,262 +49,264 @@ public class CrudTrabajadoresController {
     @FXML private TableColumn<Trabajador, Rol> colRol;
     @FXML private TableColumn<Trabajador, LocalDate> colFechaAlta;
 
-    @FXML private Label lblContador;
+    @FXML private Label lblTotalTrabajadores;
 
-    private Trabajador adminActual;
-    private TrabajadorDAO trabajadorDAO = new TrabajadorDAO();
+    private Trabajador trabajadorActual;
+    private final TrabajadorDAO trabajadorDAO = new TrabajadorDAO();
+    private final FichajeDAO fichajeDAO = new FichajeDAO();
 
-    public void inicializar(Trabajador admin) {
-        this.adminActual = admin;
+    public void inicializar(Trabajador trabajador) {
+        this.trabajadorActual = trabajador;
+        System.out.println("👥 CrudTrabajadoresController inicializado");
 
-        // Configurar ComboBox de rol
-        cbRol.setItems(FXCollections.observableArrayList("TODOS", "ADMIN", "TRABAJADOR"));
-        cbRol.setValue("TODOS");
-
-        // Configurar tabla
         configurarTabla();
-
-        // Deshabilitar botones editar/eliminar hasta seleccionar
-        btnEditar.setDisable(true);
-        btnEliminar.setDisable(true);
-
-        // Listener para selección
-        tableTrabajadores.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            boolean haySeleccion = newSel != null;
-            btnEditar.setDisable(!haySeleccion);
-            btnEliminar.setDisable(!haySeleccion);
-        });
-
-        // Doble clic para editar
-        tableTrabajadores.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-                if (tableTrabajadores.getSelectionModel().getSelectedItem() != null) {
-                    handleEditar();
-                }
-            }
-        });
-
-        // Cargar trabajadores
+        configurarRolCombo();  // ← NUEVO
         cargarTrabajadores();
+        configurarBusqueda();
 
-        System.out.println("✅ Vista 'CRUD Trabajadores' cargada para ADMIN: " + admin.getNombre());
+        if (btnEditar != null) btnEditar.setDisable(true);
+        if (btnEliminar != null) btnEliminar.setDisable(true);
     }
 
     private void configurarTabla() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colNumeroTarjeta.setCellValueFactory(new PropertyValueFactory<>("numeroTarjeta"));
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        colApellidos.setCellValueFactory(new PropertyValueFactory<>("apellidos"));
-        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-        colRol.setCellValueFactory(new PropertyValueFactory<>("rol"));
-        colFechaAlta.setCellValueFactory(new PropertyValueFactory<>("fechaAlta"));
+        if (colId != null) colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        if (colNumeroTarjeta != null) colNumeroTarjeta.setCellValueFactory(new PropertyValueFactory<>("numeroTarjeta"));
+        if (colNombre != null) colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        if (colApellidos != null) colApellidos.setCellValueFactory(new PropertyValueFactory<>("apellidos"));
+        if (colEmail != null) colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        if (colRol != null) colRol.setCellValueFactory(new PropertyValueFactory<>("rol"));
+        if (colFechaAlta != null) colFechaAlta.setCellValueFactory(new PropertyValueFactory<>("fechaAlta"));
 
-        // Formatear columna de rol con colores
-        colRol.setCellFactory(col -> new TableCell<Trabajador, Rol>() {
-            @Override
-            protected void updateItem(Rol rol, boolean empty) {
-                super.updateItem(rol, empty);
-                if (empty || rol == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(rol.name());
-                    if (rol == Rol.ADMIN) {
-                        setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+        // Color para roles
+        if (colRol != null) {
+            colRol.setCellFactory(column -> new TableCell<>() {
+                @Override
+                protected void updateItem(Rol rol, boolean empty) {
+                    super.updateItem(rol, empty);
+                    if (empty || rol == null) {
+                        setText(null);
+                        setStyle("");
                     } else {
-                        setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
+                        setText(rol.name());
+                        if (rol == Rol.ADMIN) {
+                            setStyle("-fx-text-fill: #d32f2f; -fx-font-weight: bold;");
+                        } else {
+                            setStyle("-fx-text-fill: #1976d2;");
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        // Formatear columna de fecha
-        colFechaAlta.setCellFactory(col -> new TableCell<Trabajador, LocalDate>() {
-            private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        if (tableTrabajadores != null) {
+            tableTrabajadores.getSelectionModel().selectedItemProperty().addListener(
+                    (observable, oldValue, newValue) -> {
+                        boolean seleccionado = newValue != null;
+                        if (btnEditar != null) btnEditar.setDisable(!seleccionado);
+                        if (btnEliminar != null) btnEliminar.setDisable(!seleccionado);
+                    }
+            );
+        }
+    }
 
-            @Override
-            protected void updateItem(LocalDate fecha, boolean empty) {
-                super.updateItem(fecha, empty);
-                if (empty || fecha == null) {
-                    setText(null);
-                } else {
-                    setText(fecha.format(formatter));
-                }
-            }
-        });
+    /**
+     * NUEVO: Configura cbRol con opciones TODOS/ADMIN/TRABAJADOR.
+     */
+    private void configurarRolCombo() {
+        if (cbRol == null) {
+            System.out.println("⚠️ cbRol no disponible");
+            return;
+        }
 
-        // Email en cursiva
-        colEmail.setCellFactory(col -> new TableCell<Trabajador, String>() {
-            @Override
-            protected void updateItem(String email, boolean empty) {
-                super.updateItem(email, empty);
-                if (empty || email == null || email.isEmpty()) {
-                    setText("—");
-                    setStyle("-fx-text-fill: #95a5a6;");
-                } else {
-                    setText(email);
-                    setStyle("-fx-font-style: italic; -fx-text-fill: #3498db;");
-                }
-            }
-        });
+        cbRol.getItems().clear();
+        cbRol.getItems().addAll("TODOS", "ADMIN", "TRABAJADOR");
+        cbRol.setValue("TODOS");
+
+        // Listener para filtrar al cambiar
+        cbRol.valueProperty().addListener((obs, old, nuevo) -> filtrarTrabajadores(txtBuscar.getText()));
+
+        System.out.println("✅ ComboBox rol configurado");
     }
 
     private void cargarTrabajadores() {
-        System.out.println("🔍 Cargando trabajadores...");
+        try {
+            List<Trabajador> trabajadores = trabajadorDAO.obtenerTodos();
 
-        String busqueda = txtBuscar.getText().trim();
-        String rolFiltro = cbRol.getValue();
+            if (tableTrabajadores != null) {
+                tableTrabajadores.setItems(FXCollections.observableArrayList(trabajadores));
+            }
 
-        List<Trabajador> trabajadores = trabajadorDAO.obtenerTodos();
+            if (lblTotalTrabajadores != null) {
+                lblTotalTrabajadores.setText("Total: " + trabajadores.size());
+            }
 
-        // Aplicar filtros
-        if (!busqueda.isEmpty()) {
-            String busquedaLower = busqueda.toLowerCase();
-            trabajadores = trabajadores.stream()
-                    .filter(t ->
-                            t.getNombre().toLowerCase().contains(busquedaLower) ||
-                                    (t.getApellidos() != null && t.getApellidos().toLowerCase().contains(busquedaLower)) ||
-                                    t.getNumeroTarjeta().toLowerCase().contains(busquedaLower) ||
-                                    (t.getEmail() != null && t.getEmail().toLowerCase().contains(busquedaLower))
-                    )
-                    .collect(Collectors.toList());
+            System.out.println("✅ Trabajadores cargados: " + trabajadores.size());
+
+        } catch (Exception e) {
+            System.err.println("💥 ERROR: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "No se pudieron cargar los trabajadores");
         }
+    }
 
-        if (!rolFiltro.equals("TODOS")) {
-            Rol rol = Rol.valueOf(rolFiltro);
-            trabajadores = trabajadores.stream()
-                    .filter(t -> t.getRol() == rol)
-                    .collect(Collectors.toList());
+    private void configurarBusqueda() {
+        if (txtBuscar != null) {
+            txtBuscar.textProperty().addListener((obs, old, nuevo) -> filtrarTrabajadores(nuevo));
         }
-
-        ObservableList<Trabajador> items = FXCollections.observableArrayList(trabajadores);
-        tableTrabajadores.setItems(items);
-        lblContador.setText("Mostrando " + items.size() + " trabajador(es)");
-
-        System.out.println("   ✅ Cargados " + items.size() + " trabajador(es)");
     }
 
     @FXML
     private void handleBuscar() {
-        cargarTrabajadores();
+        filtrarTrabajadores(txtBuscar != null ? txtBuscar.getText() : "");
     }
 
     @FXML
     private void handleLimpiar() {
-        txtBuscar.clear();
-        cbRol.setValue("TODOS");
+        if (txtBuscar != null) txtBuscar.clear();
+        if (cbRol != null) cbRol.setValue("TODOS");
         cargarTrabajadores();
+    }
+
+    private void filtrarTrabajadores(String texto) {
+        try {
+            List<Trabajador> todos = trabajadorDAO.obtenerTodos();
+
+            // Filtrar por texto
+            if (texto == null) texto = "";
+            String busqueda = texto.toLowerCase();
+
+            List<Trabajador> filtrados = todos.stream()
+                    .filter(t ->
+                            t.getNombre().toLowerCase().contains(busqueda) ||
+                                    t.getApellidos().toLowerCase().contains(busqueda) ||
+                                    t.getNumeroTarjeta().contains(busqueda) ||
+                                    (t.getEmail() != null && t.getEmail().toLowerCase().contains(busqueda))
+                    )
+                    .toList();
+
+            // Filtrar por rol (si cbRol existe)
+            if (cbRol != null && cbRol.getValue() != null && !cbRol.getValue().equals("TODOS")) {
+                Rol rolSeleccionado = Rol.valueOf(cbRol.getValue());
+                filtrados = filtrados.stream()
+                        .filter(t -> t.getRol() == rolSeleccionado)
+                        .toList();
+            }
+
+            if (tableTrabajadores != null) {
+                tableTrabajadores.setItems(FXCollections.observableArrayList(filtrados));
+            }
+
+            if (lblTotalTrabajadores != null) {
+                lblTotalTrabajadores.setText("Encontrados: " + filtrados.size());
+            }
+
+        } catch (Exception e) {
+            System.err.println("💥 ERROR al filtrar: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void handleNuevo() {
-        abrirDialogoTrabajador(null);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/dialogo_trabajador.fxml"));
+            Parent root = loader.load();
+            DialogoTrabajadorController controller = loader.getController();
+            controller.inicializarNuevo();
+
+            Stage stage = new Stage();
+            stage.setTitle("Nuevo Trabajador");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(btnNuevo.getScene().getWindow());
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.showAndWait();
+
+            if (controller.isGuardado()) {
+                cargarTrabajadores();
+                AlertasUtil.mostrarExito("Éxito", "Trabajador creado correctamente");
+            }
+        } catch (IOException e) {
+            AlertasUtil.mostrarError("Error", "No se pudo abrir el diálogo");
+        }
     }
 
     @FXML
     private void handleEditar() {
         Trabajador seleccionado = tableTrabajadores.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) return;
+        if (seleccionado == null) {
+            AlertasUtil.mostrarAdvertencia("Advertencia", "Debe seleccionar un trabajador");
+            return;
+        }
 
-        abrirDialogoTrabajador(seleccionado);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/dialogo_trabajador.fxml"));
+            Parent root = loader.load();
+            DialogoTrabajadorController controller = loader.getController();
+            controller.inicializarEditar(seleccionado);
+
+            Stage stage = new Stage();
+            stage.setTitle("Editar Trabajador");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(btnEditar.getScene().getWindow());
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.showAndWait();
+
+            if (controller.isGuardado()) {
+                cargarTrabajadores();
+                AlertasUtil.mostrarExito("Éxito", "Trabajador actualizado correctamente");
+            }
+        } catch (IOException e) {
+            AlertasUtil.mostrarError("Error", "No se pudo abrir el diálogo");
+        }
     }
 
     @FXML
     private void handleEliminar() {
         Trabajador seleccionado = tableTrabajadores.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) return;
-
-        // Validación: no se puede eliminar a sí mismo
-        if (seleccionado.getId().equals(adminActual.getId())) {
-            mostrarAlerta("Error", "No puedes eliminar tu propia cuenta.");
+        if (seleccionado == null) {
+            AlertasUtil.mostrarAdvertencia("Advertencia", "Debe seleccionar un trabajador");
             return;
         }
 
-        // Confirmación
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Confirmar eliminación");
-        confirmacion.setHeaderText("¿Estás seguro de eliminar este trabajador?");
-        confirmacion.setContentText(
-                "Trabajador: " + seleccionado.getNombreCompleto() + "\n" +
-                        "Tarjeta: " + seleccionado.getNumeroTarjeta() + "\n" +
-                        "Rol: " + seleccionado.getRol().name() + "\n\n" +
-                        "⚠️ ATENCIÓN: También se eliminarán todos sus fichajes."
-        );
-
-        Optional<ButtonType> result = confirmacion.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            boolean exito = trabajadorDAO.eliminar(seleccionado.getId());
-
-            if (exito) {
-                Alert info = new Alert(Alert.AlertType.INFORMATION);
-                info.setTitle("Eliminado");
-                info.setHeaderText(null);
-                info.setContentText("✅ Trabajador eliminado correctamente");
-                info.showAndWait();
-
-                cargarTrabajadores();
-            } else {
-                mostrarAlerta("Error", "❌ Error al eliminar el trabajador");
-            }
+        if (seleccionado.getId().equals(trabajadorActual.getId())) {
+            AlertasUtil.mostrarError("Error", "No puede eliminarse a sí mismo");
+            return;
         }
-    }
 
-    @FXML
-    private void handleRefrescar() {
-        cargarTrabajadores();
+        boolean tieneFichajes = fichajeDAO.tieneFichajes(seleccionado.getId());
+        String mensaje = tieneFichajes
+                ? "¿Eliminar a " + seleccionado.getNombreCompleto() + "?\n\n" +
+                "ADVERTENCIA: Se eliminarán TODOS sus fichajes."
+                : "¿Eliminar a " + seleccionado.getNombreCompleto() + "?";
+
+        if (!AlertasUtil.confirmarAccion("Confirmar eliminación", mensaje)) {
+            return;
+        }
+
+        try {
+            if (trabajadorDAO.eliminar(seleccionado.getId())) {
+                cargarTrabajadores();
+                AlertasUtil.mostrarExito("Éxito", "Trabajador eliminado correctamente");
+            } else {
+                AlertasUtil.mostrarError("Error", "No se pudo eliminar el trabajador");
+            }
+        } catch (Exception e) {
+            AlertasUtil.mostrarError("Error", "Error al eliminar: " + e.getMessage());
+        }
     }
 
     @FXML
     private void handleVolver() {
-        System.out.println("🔙 Volviendo al dashboard...");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.DashboardController controller = loader.getController();
-            controller.inicializar(adminActual);
-
-            Stage stage = (Stage) btnVolver.getScene().getWindow();
-            stage.setScene(new Scene(root, 800, 600));
-            stage.setTitle("Control Horario - Dashboard");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al volver al dashboard: " + e.getMessage());
-            e.printStackTrace();
-        }
+        NavegacionUtil.abrirDashboard(btnVolver, trabajadorActual);
     }
 
-    private void abrirDialogoTrabajador(Trabajador trabajador) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/dialogo_trabajador.fxml"));
-            Parent root = loader.load();
-
-            DialogoTrabajadorController controller = loader.getController();
-            controller.inicializar(trabajador);
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(trabajador == null ? "Nuevo Trabajador" : "Editar Trabajador");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(btnNuevo.getScene().getWindow());
-            dialogStage.setScene(new Scene(root, 550, 650));
-            dialogStage.setResizable(false);
-            dialogStage.showAndWait();
-
-            if (controller.isGuardado()) {
-                cargarTrabajadores();
-            }
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al abrir diálogo de trabajador: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void mostrarAlerta(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+    @FXML
+    private void handleRefrescar() {
+        if (txtBuscar != null) txtBuscar.clear();
+        if (cbRol != null) cbRol.setValue("TODOS");
+        cargarTrabajadores();
+        AlertasUtil.mostrarInfo("Información", "Lista actualizada");
     }
 }

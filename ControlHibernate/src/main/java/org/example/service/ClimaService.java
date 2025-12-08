@@ -3,101 +3,159 @@ package org.example.service;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
+/**
+ * Servicio para obtener información del clima desde OpenWeatherMap API.
+ *
+ * NOTA: Requiere API Key de OpenWeatherMap.
+ * En producción, la API Key debería estar en un archivo de configuración
+ * o variable de entorno, NO hardcodeada.
+ */
 public class ClimaService {
 
-    private static final String API_KEY = "7dde4f8c5ecd90757d4febf887562348"; // Reemplaza con tu clave
-    private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
+    // ⚠️ TODO: Mover a archivo de configuración
+    private static final String API_KEY = "7dde4f8c5ecd90757d4febf887562348";
     private static final String CIUDAD = "Alzira,ES";
+    private static final String URL_BASE = "http://api.openweathermap.org/data/2.5/weather";
 
-    public String obtenerClimaActual() {
-        try {
-            String url = BASE_URL + "?q=" + CIUDAD + "&appid=" + API_KEY + "&units=metric&lang=es";
-
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                String descripcion = json.getAsJsonArray("weather")
-                        .get(0).getAsJsonObject()
-                        .get("description").getAsString();
-
-                return traducirClima(descripcion);
-            } else {
-                System.err.println("⚠️ Error al obtener clima: " + response.statusCode());
-                return "Desconocido";
-            }
-
-        } catch (Exception e) {
-            System.err.println("❌ Error al consultar API del clima: " + e.getMessage());
-            return "Desconocido";
+    /**
+     * Obtiene la descripción del clima actual.
+     *
+     * @return Descripción del clima (ej: "Soleado", "Nublado")
+     * @throws Exception Si hay error al obtener el clima
+     */
+    public String obtenerClima() throws Exception {
+        // Si no hay API key configurada, retornar valor por defecto
+        if (API_KEY.equals("7dde4f8c5ecd90757d4febf887562348")) {
+            System.out.println("⚠️  API Key de clima no configurada");
+            return "No disponible";
         }
-    }
 
-    private String traducirClima(String descripcion) {
-        descripcion = descripcion.toLowerCase();
+        String urlCompleta = String.format(
+                "%s?q=%s&appid=%s&lang=es&units=metric",
+                URL_BASE, CIUDAD, API_KEY
+        );
 
-        if (descripcion.contains("despejado") || descripcion.contains("cielo claro")) {
-            return "Despejado";
-        } else if (descripcion.contains("nubes") || descripcion.contains("nublado")) {
-            return "Nublado";
-        } else if (descripcion.contains("lluvia")) {
-            return "Lluvia";
-        } else if (descripcion.contains("tormenta")) {
-            return "Tormenta";
-        } else if (descripcion.contains("nieve")) {
-            return "Nieve";
-        } else if (descripcion.contains("niebla")) {
-            return "Niebla";
-        } else if (descripcion.contains("viento")) {
-            return "Ventoso";
+        System.out.println("🌤️  Consultando clima...");
+
+        URL url = new URL(urlCompleta);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(5000);
+
+        int responseCode = conn.getResponseCode();
+
+        if (responseCode == 200) {
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream())
+            );
+
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // Parsear JSON
+            JsonObject json = JsonParser.parseString(response.toString())
+                    .getAsJsonObject();
+
+            String descripcion = json.getAsJsonArray("weather")
+                    .get(0)
+                    .getAsJsonObject()
+                    .get("description")
+                    .getAsString();
+
+            // Capitalizar primera letra
+            descripcion = descripcion.substring(0, 1).toUpperCase() +
+                    descripcion.substring(1);
+
+            System.out.println("✅ Clima obtenido: " + descripcion);
+            return descripcion;
+
         } else {
-            return "Parcialmente nublado";
+            System.err.println("⚠️  Error HTTP " + responseCode + " al obtener clima");
+            return "No disponible";
         }
     }
 
-    public String obtenerClimaConDetalles() {
-        try {
-            String url = BASE_URL + "?q=" + CIUDAD + "&appid=" + API_KEY + "&units=metric&lang=es";
+    /**
+     * Obtiene la descripción del clima actual con temperatura.
+     * Formato: "Soleado (22°C)"
+     *
+     * @return Descripción del clima con temperatura
+     * @throws Exception Si hay error al obtener el clima
+     */
+    public String obtenerClimaConDetalles() throws Exception {
+        // Si no hay API key configurada, retornar valor por defecto
+        if (API_KEY.equals("TU_API_KEY_AQUI")) {
+            System.out.println("⚠️  API Key de clima no configurada");
+            return "No disponible";
+        }
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .GET()
-                    .build();
+        String urlCompleta = String.format(
+                "%s?q=%s&appid=%s&lang=es&units=metric",
+                URL_BASE, CIUDAD, API_KEY
+        );
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("🌤️  Consultando clima con detalles...");
 
-            if (response.statusCode() == 200) {
-                JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+        URL url = new URL(urlCompleta);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(5000);
+        conn.setReadTimeout(5000);
 
-                String descripcion = json.getAsJsonArray("weather")
-                        .get(0).getAsJsonObject()
-                        .get("description").getAsString();
+        int responseCode = conn.getResponseCode();
 
-                double temperatura = json.getAsJsonObject("main")
-                        .get("temp").getAsDouble();
+        if (responseCode == 200) {
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream())
+            );
 
-                String clima = traducirClima(descripcion);
-                return clima + " (" + Math.round(temperatura) + "°C)";
+            StringBuilder response = new StringBuilder();
+            String inputLine;
 
-            } else {
-                return "Desconocido";
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
             }
+            in.close();
 
-        } catch (Exception e) {
-            System.err.println("❌ Error al consultar API del clima: " + e.getMessage());
-            return "Desconocido";
+            // Parsear JSON
+            JsonObject json = JsonParser.parseString(response.toString())
+                    .getAsJsonObject();
+
+            String descripcion = json.getAsJsonArray("weather")
+                    .get(0)
+                    .getAsJsonObject()
+                    .get("description")
+                    .getAsString();
+
+            // Obtener temperatura
+            double temperatura = json.getAsJsonObject("main")
+                    .get("temp")
+                    .getAsDouble();
+
+            // Capitalizar primera letra de descripción
+            descripcion = descripcion.substring(0, 1).toUpperCase() +
+                    descripcion.substring(1);
+
+            // Formato: "Soleado (22°C)"
+            String climaCompleto = String.format("%s (%.0f°C)", descripcion, temperatura);
+
+            System.out.println("✅ Clima con detalles obtenido: " + climaCompleto);
+            return climaCompleto;
+
+        } else {
+            System.err.println("⚠️  Error HTTP " + responseCode + " al obtener clima");
+            return "No disponible";
         }
     }
 }

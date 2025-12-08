@@ -1,13 +1,16 @@
-package org.example.model;
+package org.example.model.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * DTO para mostrar todos los fichajes de UN DÍA en una sola fila de tabla
- * Soporta hasta 5 pares de ENTRADA/SALIDA por día
+ * DTO para mostrar todos los fichajes de UN DÍA en una sola fila de tabla.
+ * Soporta hasta 5 pares de ENTRADA/SALIDA por día.
  */
 public class FichajeDiaDTO {
+
+    public static final int MAX_PARES_ENTRADA_SALIDA = 5;
+
     private LocalDate fecha;
 
     // Hasta 5 pares de entrada/salida
@@ -31,18 +34,16 @@ public class FichajeDiaDTO {
     private String nombreEmpleado;
     private String numeroTarjeta;
 
-    // Constructor vacío
+    // Constructores
     public FichajeDiaDTO() {
     }
 
-    // Constructor para trabajador
     public FichajeDiaDTO(LocalDate fecha, Double horasTotales, String estado) {
         this.fecha = fecha;
         this.horasTotales = horasTotales;
         this.estado = estado;
     }
 
-    // Constructor para admin (incluye datos del empleado)
     public FichajeDiaDTO(LocalDate fecha, String nombreEmpleado, String numeroTarjeta,
                          Double horasTotales, String estado) {
         this.fecha = fecha;

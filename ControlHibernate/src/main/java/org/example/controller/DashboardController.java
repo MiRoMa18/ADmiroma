@@ -1,21 +1,24 @@
 package org.example.controller;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.example.controller.trabajador.FicharController;
-import org.example.model.Rol;
-import org.example.model.Trabajador;
+import org.example.model.entity.Trabajador;
+import org.example.model.enums.Rol;
+import org.example.util.AlertasUtil;
+import org.example.util.NavegacionUtil;
 
 import java.io.IOException;
 
+/**
+ * Controlador para el dashboard principal.
+ * Muestra diferentes opciones según el rol del usuario (ADMIN o TRABAJADOR).
+ */
 public class DashboardController {
 
     @FXML
@@ -24,23 +27,10 @@ public class DashboardController {
     @FXML
     private Label lblRol;
 
+    // Botones comunes
     @FXML
-    private VBox menuAdmin;
+    private Button btnFichar;
 
-    @FXML
-    private VBox menuComun;
-
-    // Botones ADMIN
-    @FXML
-    private Button btnVerTodosFichajes;
-
-    @FXML
-    private Button btnEstadisticasGlobales;
-
-    @FXML
-    private Button btnCrudTrabajadores;
-
-    // Botones COMUNES
     @FXML
     private Button btnMisFichajes;
 
@@ -51,211 +41,225 @@ public class DashboardController {
     private Button btnMisDatos;
 
     @FXML
-    private Button btnFichar;
+    private Button btnCerrarSesion;
+
+    // Botones solo ADMIN
+    @FXML
+    private Button btnCrudTrabajadores;
 
     @FXML
-    private Button btnCerrarSesion;
+    private Button btnVerTodosFichajes;
+
+    @FXML
+    private Button btnEstadisticasGlobales;
+
+    // Contenedores para ocultar secciones completas
+    @FXML
+    private VBox menuAdmin;
+
+    @FXML
+    private VBox menuComun;
 
     private Trabajador trabajadorActual;
 
+    /**
+     * Inicializa el dashboard con los datos del trabajador.
+     * Este método debe ser llamado después de cargar el FXML.
+     *
+     * @param trabajador Usuario que ha iniciado sesión
+     */
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
 
-        lblBienvenida.setText("¡Bienvenido, " + trabajador.getNombre() + "!");
+        System.out.println("🏠 Dashboard inicializado para: " + trabajador.getNombreCompleto());
+
+        // Mostrar bienvenida
+        lblBienvenida.setText("¡Bienvenido, " + trabajador.getNombreCompleto() + "!");
         lblRol.setText("Rol: " + trabajador.getRol());
 
-        if (trabajador.getRol() == Rol.ADMIN) {
-            menuAdmin.setVisible(true);
-            menuAdmin.setManaged(true);
-            System.out.println("✅ Dashboard cargado para ADMIN");
-        } else {
-            menuAdmin.setVisible(false);
-            menuAdmin.setManaged(false);
-            System.out.println("✅ Dashboard cargado para TRABAJADOR");
-        }
+        // Configurar visibilidad según rol
+        configurarVistaPorRol();
     }
 
-    // ========== MÉTODOS ADMIN ==========
+    /**
+     * Configura qué botones son visibles según el rol del usuario.
+     */
+    private void configurarVistaPorRol() {
+        boolean esAdmin = trabajadorActual.getRol() == Rol.ADMIN;
 
+        // Ocultar/mostrar el menú de administrador completo
+        if (menuAdmin != null) {
+            menuAdmin.setVisible(esAdmin);
+            menuAdmin.setManaged(esAdmin);
+        }
+
+        // Botones solo para ADMIN (por si acaso no están en menuAdmin)
+        if (btnCrudTrabajadores != null) {
+            btnCrudTrabajadores.setVisible(esAdmin);
+            btnCrudTrabajadores.setManaged(esAdmin);
+        }
+
+        if (btnVerTodosFichajes != null) {
+            btnVerTodosFichajes.setVisible(esAdmin);
+            btnVerTodosFichajes.setManaged(esAdmin);
+        }
+
+        if (btnEstadisticasGlobales != null) {
+            btnEstadisticasGlobales.setVisible(esAdmin);
+            btnEstadisticasGlobales.setManaged(esAdmin);
+        }
+
+        System.out.println("✅ Vista configurada para: " +
+                (esAdmin ? "ADMINISTRADOR" : "TRABAJADOR"));
+    }
+
+    /**
+     * Abre la vista de fichar (común para todos).
+     */
     @FXML
-    private void handleVerTodosFichajes() {
-        System.out.println("🔘 Admin: Ver todos los fichajes (CRUD)");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/crud_fichajes.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.admin.CrudFichajesController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) btnVerTodosFichajes.getScene().getWindow();
-            stage.setScene(new Scene(root, 1200, 750));
-            stage.setTitle("Control Horario - Gestión de Fichajes");
-
-            System.out.println("✅ Vista 'CRUD Fichajes' cargada");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cargar CRUD Fichajes: " + e.getMessage());
-            e.printStackTrace();
-        }
+    private void handleFichar() {
+        cargarVista("/views/fichar.fxml", "Fichar", 500, 650);
     }
 
+    /**
+     * Alias para handleFichar (compatibilidad).
+     */
     @FXML
-    private void handleEstadisticasGlobales() {
-        System.out.println("🔘 Admin: Ver estadísticas globales");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/estadisticas_globales.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.admin.EstadisticasGlobalesController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) btnEstadisticasGlobales.getScene().getWindow();
-            stage.setScene(new Scene(root, 1000, 750));
-            stage.setTitle("Control Horario - Estadísticas Globales");
-
-            System.out.println("✅ Vista 'Estadísticas Globales' cargada");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cargar Estadísticas Globales: " + e.getMessage());
-            e.printStackTrace();
-        }
+    private void handlerFichar() {
+        handleFichar();
     }
 
+    /**
+     * Alias para handleFichar (compatibilidad).
+     */
     @FXML
-    private void handleCrudTrabajadores() {
-        System.out.println("🔘 Admin: CRUD Trabajadores");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/crud_trabajadores.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.admin.CrudTrabajadoresController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) btnCrudTrabajadores.getScene().getWindow();
-            stage.setScene(new Scene(root, 1100, 700));
-            stage.setTitle("Control Horario - Gestión de Trabajadores");
-
-            System.out.println("✅ Vista 'CRUD Trabajadores' cargada");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cargar CRUD Trabajadores: " + e.getMessage());
-            e.printStackTrace();
-        }
+    private void handlerRegistrarFichaje() {
+        handleFichar();
     }
 
-    // ========== MÉTODOS COMUNES ==========
-
+    /**
+     * Abre la vista de fichajes del trabajador actual.
+     */
     @FXML
     private void handleMisFichajes() {
-        System.out.println("🔘 Usuario: Ver mis fichajes - ID: " + trabajadorActual.getId());
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/trabajador/mis_fichajes.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.trabajador.MisFichajesController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) btnMisFichajes.getScene().getWindow();
-            stage.setScene(new Scene(root, 900, 650));
-            stage.setTitle("Control Horario - Mis Fichajes");
-
-            System.out.println("✅ Vista 'Mis Fichajes' cargada");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cargar Mis Fichajes: " + e.getMessage());
-            e.printStackTrace();
-        }
+        cargarVista("/views/trabajador/mis_fichajes.fxml", "Mis Fichajes", 1000, 600);
     }
 
+    /**
+     * Abre la vista de estadísticas del trabajador actual.
+     */
     @FXML
     private void handleMisEstadisticas() {
-        System.out.println("🔘 Usuario: Ver mis estadísticas - ID: " + trabajadorActual.getId());
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/trabajador/mis_estadisticas.fxml"));
-            Parent root = loader.load();
-
-            org.example.controller.trabajador.MisEstadisticasController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) btnMisEstadisticas.getScene().getWindow();
-            stage.setScene(new Scene(root, 1000, 750));
-            stage.setTitle("Control Horario - Mis Estadísticas");
-
-            System.out.println("✅ Vista 'Mis Estadísticas' cargada");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cargar Mis Estadísticas: " + e.getMessage());
-            e.printStackTrace();
-        }
+        cargarVista("/views/trabajador/mis_estadisticas.fxml", "Mis Estadísticas", 900, 600);
     }
 
+    /**
+     * Abre CRUD de trabajadores (solo ADMIN).
+     */
+    @FXML
+    private void handleCrudTrabajadores() {
+        cargarVista("/views/admin/crud_trabajadores.fxml", "Gestión de Trabajadores", 1000, 600);
+    }
+
+    /**
+     * Abre CRUD de fichajes (solo ADMIN).
+     * Método llamado desde el FXML.
+     */
+    @FXML
+    private void handleVerTodosFichajes() {
+        cargarVista("/views/admin/crud_fichajes.fxml", "Gestión de Fichajes", 1200, 700);
+    }
+
+    /**
+     * Abre la vista de datos personales (tarjeta y PIN).
+     */
     @FXML
     private void handleMisDatos() {
-        System.out.println("🔘 Usuario: Ver mis datos");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/trabajador/mis_datos.fxml"));
-            Parent root = loader.load();
-
-            // Pasar trabajador al controlador
-            org.example.controller.trabajador.MisDatosController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            // Cambiar escena
-            Stage stage = (Stage) btnMisDatos.getScene().getWindow();
-            stage.setScene(new Scene(root, 800, 600));
-            stage.setTitle("Control Horario - Mis Datos");
-
-            System.out.println("✅ Vista 'Mis Datos' cargada");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cargar Mis Datos: " + e.getMessage());
-            e.printStackTrace();
-        }
+        AlertasUtil.mostrarInfo(
+                "Mis Datos",
+                "Número de Tarjeta: " + trabajadorActual.getNumeroTarjeta() + "\n" +
+                        "Nombre: " + trabajadorActual.getNombreCompleto() + "\n" +
+                        "Rol: " + trabajadorActual.getRol() + "\n" +
+                        "Fecha de Alta: " + trabajadorActual.getFechaAlta()
+        );
     }
 
+    /**
+     * Abre estadísticas globales (solo ADMIN).
+     */
     @FXML
-    private void handleFichar(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/trabajador/fichar.fxml"));
-            Parent root = loader.load();
-
-            FicharController controller = loader.getController();
-            controller.inicializar(trabajadorActual);
-
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, 800, 600));
-            stage.setTitle("Control Horario - Fichar");
-        } catch (IOException e) {
-            System.err.println("❌ Error al abrir Fichar: " + e.getMessage());
-            e.printStackTrace();
-        }
+    private void handleEstadisticasGlobales() {
+        cargarVista("/views/admin/estadisticas_globales.fxml", "Estadísticas Globales", 1000, 600);
     }
 
+    /**
+     * Cierra sesión y vuelve al login.
+     */
     @FXML
     private void handleCerrarSesion() {
-        System.out.println("🔘 Cerrando sesión...");
-        try {
-            // Volver al login
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/login.fxml"));
-            Parent root = loader.load();
+        System.out.println("🚪 Cerrando sesión de: " + trabajadorActual.getNombreCompleto());
 
-            Stage stage = (Stage) btnCerrarSesion.getScene().getWindow();
-            stage.setScene(new Scene(root, 450, 550));
-            stage.setTitle("Control Horario - Login");
+        boolean confirmar = AlertasUtil.confirmarAccion(
+                "Cerrar Sesión",
+                "¿Está seguro que desea cerrar sesión?"
+        );
 
-            System.out.println("✅ Sesión cerrada, volviendo a login");
-
-        } catch (IOException e) {
-            System.err.println("❌ Error al cerrar sesión: " + e.getMessage());
-            e.printStackTrace();
+        if (confirmar) {
+            NavegacionUtil.volverAlLogin(btnCerrarSesion);
         }
     }
 
-    // ========== UTILIDADES ==========
+    /**
+     * Carga una vista y pasa el trabajador actual al controlador.
+     *
+     * @param rutaFxml Ruta al archivo FXML
+     * @param titulo Título de la ventana
+     * @param ancho Ancho de la ventana
+     * @param alto Alto de la ventana
+     */
+    private void cargarVista(String rutaFxml, String titulo, int ancho, int alto) {
+        try {
+            // Verificar que el recurso existe
+            if (getClass().getResource(rutaFxml) == null) {
+                System.err.println("💥 ERROR: Archivo FXML no encontrado: " + rutaFxml);
+                AlertasUtil.mostrarError(
+                        "Archivo no encontrado",
+                        "No se pudo encontrar el archivo:\n" + rutaFxml +
+                                "\n\nVerifique que el archivo existe en src/main/resources" + rutaFxml
+                );
+                return;
+            }
 
-    private void mostrarMensajeTemporal(String mensaje) {
-        // Por ahora solo muestra en consola
-        // Más adelante puedes mostrar un Alert o cambiar de vista
-        System.out.println("ℹ️  " + mensaje);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(rutaFxml));
+            Parent root = loader.load();
+
+            // Obtener el controlador y pasarle el trabajador
+            Object controller = loader.getController();
+
+            // Usar reflexión para llamar al método inicializar si existe
+            try {
+                controller.getClass()
+                        .getMethod("inicializar", Trabajador.class)
+                        .invoke(controller, trabajadorActual);
+            } catch (NoSuchMethodException e) {
+                System.out.println("ℹ️  El controlador no tiene método inicializar(Trabajador)");
+            }
+
+            // Cambiar escena
+            Stage stage = (Stage) btnFichar.getScene().getWindow();
+            stage.setScene(new Scene(root, ancho, alto));
+            stage.setTitle(titulo);
+
+            System.out.println("✅ Vista cargada: " + titulo);
+
+        } catch (Exception e) {
+            System.err.println("💥 ERROR al cargar vista: " + rutaFxml);
+            e.printStackTrace();
+
+            AlertasUtil.mostrarError(
+                    "Error al cargar vista",
+                    "No se pudo abrir " + titulo + ": " + e.getMessage()
+            );
+        }
     }
 }

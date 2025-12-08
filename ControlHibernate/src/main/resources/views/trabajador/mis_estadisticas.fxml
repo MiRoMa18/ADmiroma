@@ -107,10 +107,10 @@
                                    style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                             <TableView fx:id="tableMensual" prefHeight="300">
                                 <columns>
-                                    <TableColumn fx:id="colMensualFecha" text="Fecha" prefWidth="140"/>
-                                    <TableColumn fx:id="colMensualDia" text="Día Semana" prefWidth="140"/>
-                                    <TableColumn fx:id="colMensualHoras" text="Total Horas" prefWidth="120"/>
-                                    <TableColumn fx:id="colMensualEstado" text="Estado" prefWidth="140"/>
+                                    <TableColumn fx:id="colDiaFecha" text="Fecha" prefWidth="140"/>
+                                    <TableColumn fx:id="colDiaSemana" text="Día Semana" prefWidth="140"/>
+                                    <TableColumn fx:id="colDiaHoras" text="Total Horas" prefWidth="120"/>
+                                    <TableColumn fx:id="colDiaEstado" text="Estado" prefWidth="140"/>
                                 </columns>
                             </TableView>
                         </VBox>
@@ -194,11 +194,11 @@
                                    style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                             <TableView fx:id="tableSemanal" prefHeight="200">
                                 <columns>
-                                    <TableColumn fx:id="colSemanalNumero" text="Semana" prefWidth="100"/>
-                                    <TableColumn fx:id="colSemanalRango" text="Rango Fechas" prefWidth="150"/>
-                                    <TableColumn fx:id="colSemanalDias" text="Días Trabajados" prefWidth="140"/>
-                                    <TableColumn fx:id="colSemanalHoras" text="Total Horas" prefWidth="130"/>
-                                    <TableColumn fx:id="colSemanalPromedio" text="Promedio/Día" prefWidth="130"/>
+                                    <TableColumn fx:id="colSemanaNumero" text="Semana" prefWidth="100"/>
+                                    <TableColumn fx:id="colSemanaRango" text="Rango Fechas" prefWidth="150"/>
+                                    <TableColumn fx:id="colSemanaDias" text="Días Trabajados" prefWidth="140"/>
+                                    <TableColumn fx:id="colSemanaTotal" text="Total Horas" prefWidth="130"/>
+                                    <TableColumn fx:id="colSemanaPromedio" text="Promedio/Día" prefWidth="130"/>
                                 </columns>
                             </TableView>
                         </VBox>
@@ -284,10 +284,10 @@
                                    style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                             <TableView fx:id="tableAnual" prefHeight="300">
                                 <columns>
-                                    <TableColumn fx:id="colAnualMes" text="Mes" prefWidth="150"/>
-                                    <TableColumn fx:id="colAnualDias" text="Días Trabajados" prefWidth="150"/>
-                                    <TableColumn fx:id="colAnualHoras" text="Total Horas" prefWidth="150"/>
-                                    <TableColumn fx:id="colAnualPromedio" text="Promedio/Día" prefWidth="150"/>
+                                    <TableColumn fx:id="colMes" text="Mes" prefWidth="150"/>
+                                    <TableColumn fx:id="colMesDias" text="Días Trabajados" prefWidth="150"/>
+                                    <TableColumn fx:id="colMesTotal" text="Total Horas" prefWidth="150"/>
+                                    <TableColumn fx:id="colMesPromedio" text="Promedio/Día" prefWidth="150"/>
                                 </columns>
                             </TableView>
                         </VBox>
