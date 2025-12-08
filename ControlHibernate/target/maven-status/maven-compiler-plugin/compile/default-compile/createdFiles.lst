@@ -2,11 +2,13 @@ org/example/controller/admin/CrudFichajesController$2.class
 org/example/util/HorasFormateador.class
 org/example/controller/admin/DialogoTrabajadorController.class
 org/example/controller/LoginController.class
+org/example/controller/admin/DialogoSelectorFichajeController$1.class
 org/example/controller/admin/CrudTrabajadoresController$1.class
 org/example/controller/admin/DialogoFichajeController$2.class
 org/example/model/dto/estadisticas/EstadisticaDiaDTO.class
 org/example/util/FichajesProcesador$ClaveEmpleadoDia.class
 org/example/controller/DashboardController.class
+org/example/controller/admin/DialogoSelectorFichajeController$3.class
 org/example/model/entity/Fichaje.class
 org/example/util/ExcelExportador.class
 org/example/model/dto/estadisticas/EstadisticaSemanaDTO.class
@@ -19,6 +21,7 @@ org/example/util/NavegacionUtil.class
 org/example/model/enums/TipoFichaje.class
 org/example/Main.class
 org/example/controller/admin/CrudTrabajadoresController.class
+org/example/controller/admin/DialogoSelectorFichajeController.class
 org/example/util/AlertasUtil.class
 org/example/model/dto/FichajeOpcionDTO.class
 org/example/controller/FicharController.class
@@ -36,6 +39,7 @@ org/example/controller/admin/DialogoFichajeController.class
 org/example/controller/trabajador/MisEstadisticasController.class
 org/example/controller/trabajador/MisEstadisticasController$DiaEstadistica.class
 org/example/controller/admin/DialogoFichajeController$1.class
+org/example/controller/admin/DialogoSelectorFichajeController$2.class
 org/example/controller/admin/CrudFichajesController$1.class
 org/example/model/dto/estadisticas/EstadisticaMesDTO.class
 org/example/dao/FichajeDAO.class

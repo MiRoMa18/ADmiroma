@@ -6,6 +6,7 @@
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/admin/CrudFichajesController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/admin/CrudTrabajadoresController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/admin/DialogoFichajeController.java
+/Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/admin/DialogoSelectorFichajeController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/admin/DialogoTrabajadorController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/admin/EstadisticasGlobalesController.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/controller/trabajador/MisDatosController.java

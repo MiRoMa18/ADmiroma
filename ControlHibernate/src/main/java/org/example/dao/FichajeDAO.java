@@ -17,14 +17,22 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
         super(Fichaje.class);
     }
 
+    /**
+     * Busca fichajes por trabajador y rango de fechas
+     * ✨ CORREGIDO: Incluye JOIN FETCH para cargar el trabajador de forma eager
+     */
     public List<Fichaje> buscarPorTrabajadorYRango(int trabajadorId, LocalDate fechaInicio, LocalDate fechaFin) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             LocalDateTime inicio = fechaInicio.atStartOfDay();
             LocalDateTime fin = fechaFin.atTime(23, 59, 59);
 
-            String hql = "FROM Fichaje f WHERE f.trabajador.id = :trabajadorId " +
+            // ✨ JOIN FETCH para cargar el trabajador inmediatamente
+            String hql = "FROM Fichaje f " +
+                    "LEFT JOIN FETCH f.trabajador " +
+                    "WHERE f.trabajador.id = :trabajadorId " +
                     "AND f.fechaHora BETWEEN :inicio AND :fin " +
                     "ORDER BY f.fechaHora ASC";
+
             Query<Fichaje> query = session.createQuery(hql, Fichaje.class);
             query.setParameter("trabajadorId", trabajadorId);
             query.setParameter("inicio", inicio);
@@ -38,9 +46,19 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
             return List.of();
         }
     }
+
+    /**
+     * Obtiene el último fichaje de un trabajador
+     * ✨ CORREGIDO: Incluye JOIN FETCH para cargar el trabajador de forma eager
+     */
     public Optional<Fichaje> obtenerUltimoFichaje(Integer trabajadorId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Fichaje f WHERE f.trabajador.id = :id ORDER BY f.fechaHora DESC";
+            // ✨ JOIN FETCH para cargar el trabajador inmediatamente
+            String hql = "FROM Fichaje f " +
+                    "LEFT JOIN FETCH f.trabajador " +
+                    "WHERE f.trabajador.id = :id " +
+                    "ORDER BY f.fechaHora DESC";
+
             Query<Fichaje> query = session.createQuery(hql, Fichaje.class);
             query.setParameter("id", trabajadorId);
             query.setMaxResults(1);
@@ -54,6 +72,10 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
         }
     }
 
+    /**
+     * Obtiene todos los fichajes con sus trabajadores
+     * ✨ YA TIENE JOIN FETCH - Sin cambios
+     */
     public List<Fichaje> obtenerTodosConTrabajador() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "FROM Fichaje f " +
@@ -69,6 +91,11 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
             return List.of();
         }
     }
+
+    /**
+     * Busca fichajes con filtros
+     * ✨ YA TIENE JOIN FETCH - Sin cambios
+     */
     public List<Fichaje> buscar(Integer trabajadorId, LocalDate fechaInicio,
                                 LocalDate fechaFin, String tipo) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -90,6 +117,7 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
 
             hql.append("ORDER BY f.fechaHora DESC");
             Query<Fichaje> query = session.createQuery(hql.toString(), Fichaje.class);
+
             if (trabajadorId != null) {
                 query.setParameter("trabajadorId", trabajadorId);
             }
@@ -102,6 +130,7 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
             if (tipo != null && !tipo.equals("TODOS")) {
                 query.setParameter("tipo", TipoFichaje.valueOf(tipo));
             }
+
             List<Fichaje> resultado = query.list();
             return resultado;
         } catch (Exception e) {
@@ -111,6 +140,9 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
         }
     }
 
+    /**
+     * Cuenta fichajes por trabajador y rango de fechas
+     */
     public long contarPorTrabajadorYRango(int trabajadorId, LocalDate fechaInicio, LocalDate fechaFin) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             LocalDateTime inicio = fechaInicio.atStartOfDay();
@@ -135,8 +167,11 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
         }
     }
 
+    /**
+     * Verifica si un trabajador tiene fichajes
+     */
     public boolean tieneFichajes(Integer trabajadorId) {
-        System.out.println("🗄️  FichajeDAO.tieneFichajes(" + trabajadorId + ")");
+        System.out.println("🗄️ FichajeDAO.tieneFichajes(" + trabajadorId + ")");
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT COUNT(f) FROM Fichaje f WHERE f.trabajador.id = :id";
@@ -150,6 +185,27 @@ public class FichajeDAO extends BaseDAO<Fichaje> {
             System.err.println("   💥 ERROR en tieneFichajes: " + e.getMessage());
             e.printStackTrace();
             return false;
+        }
+    }
+
+    /**
+     * Sobrescribe el método buscarPorId de BaseDAO para incluir JOIN FETCH
+     * ✨ NUEVO: Versión que carga el trabajador de forma eager
+     */
+    @Override
+    public Optional<Fichaje> buscarPorId(Integer id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // ✨ JOIN FETCH para cargar el trabajador inmediatamente
+            String hql = "FROM Fichaje f LEFT JOIN FETCH f.trabajador WHERE f.id = :id";
+            Query<Fichaje> query = session.createQuery(hql, Fichaje.class);
+            query.setParameter("id", id);
+
+            Fichaje entity = query.uniqueResult();
+            return Optional.ofNullable(entity);
+        } catch (Exception e) {
+            System.err.println("   💥 ERROR en buscarPorId: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
         }
     }
 }

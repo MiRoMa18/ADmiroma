@@ -22,7 +22,7 @@
         <!-- Empleado -->
         <VBox spacing="5">
             <Label text="Empleado *" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-            <ComboBox fx:id="cbEmpleado" prefWidth="400" 
+            <ComboBox fx:id="cmbTrabajador" prefWidth="400" 
                       promptText="Selecciona un empleado"
                       style="-fx-font-size: 13px;"/>
         </VBox>
@@ -47,25 +47,39 @@
         <!-- Tipo -->
         <VBox spacing="5">
             <Label text="Tipo de Fichaje *" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-            <ComboBox fx:id="cbTipo" prefWidth="400"
+            <ComboBox fx:id="cmbTipo" prefWidth="400"
                       promptText="Selecciona el tipo"
                       style="-fx-font-size: 13px;"/>
         </VBox>
 
         <Separator/>
 
-        <!-- Clima (opcional) -->
+        <!-- Clima (solo lectura, se obtiene automáticamente) -->
         <VBox spacing="5">
-            <Label text="Clima (opcional)" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-            <TextField fx:id="txtClima" prefWidth="400"
-                      promptText="Ej: Soleado, Lluvia, Nublado..."
-                      style="-fx-font-size: 13px;"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Clima (automático)" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label text="🌐 Se obtiene de la API" 
+                       style="-fx-font-size: 10px; -fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+            </HBox>
+            <HBox spacing="10">
+                <TextField fx:id="txtClima" prefWidth="300"
+                          editable="false"
+                          promptText="Se obtendrá automáticamente..."
+                          style="-fx-font-size: 13px; -fx-background-color: #f0f0f0; -fx-opacity: 1;"
+                          HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnObtenerClima"
+                        text="🔄 Actualizar"
+                        onAction="#handleObtenerClima"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 12px; -fx-padding: 8 15; -fx-cursor: hand;"/>
+            </HBox>
+            <Label text="💡 El clima se obtiene automáticamente al abrir el diálogo" 
+                   style="-fx-font-size: 10px; -fx-text-fill: #95a5a6; -fx-font-style: italic;"/>
         </VBox>
 
         <!-- Notas (opcional) -->
         <VBox spacing="5">
             <Label text="Notas (opcional)" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-            <TextArea fx:id="taNotas" prefRowCount="4" wrapText="true"
+            <TextArea fx:id="txtNotas" prefRowCount="4" wrapText="true"
                      promptText="Agrega cualquier nota adicional sobre este fichaje..."
                      style="-fx-font-size: 13px;"/>
         </VBox>
@@ -80,7 +94,7 @@
             <Label text="Importante:" style="-fx-font-weight: bold; -fx-text-fill: #856404; -fx-font-size: 12px;"/>
             <Label text="• No se pueden crear fichajes con fecha/hora futura" wrapText="true"
                    style="-fx-text-fill: #856404; -fx-font-size: 11px;"/>
-            <Label text="• No se permiten fichajes duplicados (mismo empleado, misma fecha/hora)" wrapText="true"
+            <Label text="• El clima se obtiene automáticamente de la API" wrapText="true"
                    style="-fx-text-fill: #856404; -fx-font-size: 11px;"/>
         </VBox>
     </HBox>

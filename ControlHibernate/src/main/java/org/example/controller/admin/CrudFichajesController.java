@@ -231,7 +231,7 @@ public class CrudFichajesController {
     }
 
     @FXML
-    private void handleNuevo() throws Exception {
+    private void handleNuevo() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/dialogo_fichaje.fxml"));
             Parent root = loader.load();
@@ -251,28 +251,179 @@ public class CrudFichajesController {
                 AlertasUtil.mostrarExito("Éxito", "Fichaje creado");
             }
         } catch (IOException e) {
+            System.err.println("Error al abrir diálogo: " + e.getMessage());
+            e.printStackTrace();
             AlertasUtil.mostrarError("Error", "No se pudo abrir el diálogo");
         }
     }
 
     @FXML
     private void handleEditar() {
-        FichajeDiaDTO seleccionado = tableFichajes.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) {
-            AlertasUtil.mostrarAdvertencia("Advertencia", "Seleccione un fichaje");
+        FichajeDiaDTO diaSeleccionado = tableFichajes.getSelectionModel().getSelectedItem();
+        if (diaSeleccionado == null) {
+            AlertasUtil.mostrarAdvertencia("Advertencia", "Seleccione un registro");
             return;
         }
-        AlertasUtil.mostrarInfo("Info", "Funcionalidad en desarrollo");
+
+        try {
+            // Obtener todos los fichajes de ese trabajador en esa fecha
+            LocalDate fecha = diaSeleccionado.getFecha();
+            Integer trabajadorId = diaSeleccionado.getTrabajadorId();
+
+            List<Fichaje> fichajesDelDia = fichajeDAO.buscarPorTrabajadorYRango(
+                    trabajadorId,
+                    fecha,
+                    fecha
+            );
+
+            if (fichajesDelDia.isEmpty()) {
+                AlertasUtil.mostrarError("Error", "No se encontraron fichajes para editar");
+                return;
+            }
+
+            Fichaje fichajeAEditar;
+
+            // Si hay más de un fichaje, mostrar selector
+            if (fichajesDelDia.size() > 1) {
+                FXMLLoader selectorLoader = new FXMLLoader(
+                        getClass().getResource("/views/admin/dialogo_selector_fichaje.fxml")
+                );
+                Parent selectorRoot = selectorLoader.load();
+                DialogoSelectorFichajeController selectorController = selectorLoader.getController();
+                selectorController.inicializar(fichajesDelDia, "editar");
+
+                Stage selectorStage = new Stage();
+                selectorStage.setTitle("Seleccionar Fichaje");
+                selectorStage.initModality(Modality.APPLICATION_MODAL);
+                selectorStage.initOwner(btnEditar.getScene().getWindow());
+                selectorStage.setScene(new Scene(selectorRoot));
+                selectorStage.setResizable(false);
+                selectorStage.showAndWait();
+
+                if (!selectorController.isSeleccionado()) {
+                    return; // Usuario canceló
+                }
+
+                fichajeAEditar = selectorController.getFichajeSeleccionado();
+            } else {
+                // Solo hay un fichaje, editarlo directamente
+                fichajeAEditar = fichajesDelDia.get(0);
+            }
+
+            // Abrir diálogo de edición
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/views/admin/dialogo_fichaje.fxml")
+            );
+            Parent root = loader.load();
+            DialogoFichajeController controller = loader.getController();
+            controller.inicializarEditar(fichajeAEditar);
+
+            Stage stage = new Stage();
+            stage.setTitle("Editar Fichaje");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(btnEditar.getScene().getWindow());
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.showAndWait();
+
+            if (controller.isGuardado()) {
+                cargarFichajes();
+                AlertasUtil.mostrarExito("Éxito", "Fichaje actualizado correctamente");
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error al editar fichaje: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "No se pudo abrir el diálogo de edición");
+        } catch (Exception e) {
+            System.err.println("Error al editar fichaje: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "Error al editar: " + e.getMessage());
+        }
     }
 
     @FXML
     private void handleEliminar() {
-        FichajeDiaDTO seleccionado = tableFichajes.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) {
-            AlertasUtil.mostrarAdvertencia("Advertencia", "Seleccione un fichaje");
+        FichajeDiaDTO diaSeleccionado = tableFichajes.getSelectionModel().getSelectedItem();
+        if (diaSeleccionado == null) {
+            AlertasUtil.mostrarAdvertencia("Advertencia", "Seleccione un registro");
             return;
         }
-        AlertasUtil.mostrarInfo("Info", "Funcionalidad en desarrollo");
+
+        try {
+            // Obtener todos los fichajes de ese trabajador en esa fecha
+            LocalDate fecha = diaSeleccionado.getFecha();
+            Integer trabajadorId = diaSeleccionado.getTrabajadorId();
+
+            List<Fichaje> fichajesDelDia = fichajeDAO.buscarPorTrabajadorYRango(
+                    trabajadorId,
+                    fecha,
+                    fecha
+            );
+
+            if (fichajesDelDia.isEmpty()) {
+                AlertasUtil.mostrarError("Error", "No se encontraron fichajes para eliminar");
+                return;
+            }
+
+            Fichaje fichajeAEliminar;
+
+            // Si hay más de un fichaje, mostrar selector
+            if (fichajesDelDia.size() > 1) {
+                FXMLLoader selectorLoader = new FXMLLoader(
+                        getClass().getResource("/views/admin/dialogo_selector_fichaje.fxml")
+                );
+                Parent selectorRoot = selectorLoader.load();
+                DialogoSelectorFichajeController selectorController = selectorLoader.getController();
+                selectorController.inicializar(fichajesDelDia, "eliminar");
+
+                Stage selectorStage = new Stage();
+                selectorStage.setTitle("Seleccionar Fichaje a Eliminar");
+                selectorStage.initModality(Modality.APPLICATION_MODAL);
+                selectorStage.initOwner(btnEliminar.getScene().getWindow());
+                selectorStage.setScene(new Scene(selectorRoot));
+                selectorStage.setResizable(false);
+                selectorStage.showAndWait();
+
+                if (!selectorController.isSeleccionado()) {
+                    return; // Usuario canceló
+                }
+
+                fichajeAEliminar = selectorController.getFichajeSeleccionado();
+            } else {
+                // Solo hay un fichaje, eliminarlo directamente
+                fichajeAEliminar = fichajesDelDia.get(0);
+            }
+
+            // Confirmar eliminación
+            String mensaje = String.format(
+                    "¿Eliminar el fichaje %s de %s del día %s?",
+                    fichajeAEliminar.getTipo(),
+                    fichajeAEliminar.getFechaHora().toLocalTime(),
+                    fichajeAEliminar.getFechaHora().toLocalDate()
+            );
+
+            if (!AlertasUtil.confirmarAccion("Confirmar eliminación", mensaje)) {
+                return;
+            }
+
+            // Eliminar el fichaje
+            if (fichajeDAO.eliminar(fichajeAEliminar.getId())) {
+                cargarFichajes();
+                AlertasUtil.mostrarExito("Éxito", "Fichaje eliminado correctamente");
+            } else {
+                AlertasUtil.mostrarError("Error", "No se pudo eliminar el fichaje");
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error al eliminar fichaje: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "No se pudo abrir el diálogo de selección");
+        } catch (Exception e) {
+            System.err.println("Error al eliminar fichaje: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "Error al eliminar: " + e.getMessage());
+        }
     }
 
     @FXML

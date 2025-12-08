@@ -32,37 +32,88 @@ public class DialogoTrabajadorController {
     public void inicializarNuevo() {
         this.trabajadorEditar = null;
         configurarComponentes();
-        dpFechaAlta.setValue(LocalDate.now());
-        cmbRol.setValue(Rol.TRABAJADOR);
-        lblPinInfo.setText("* PIN requerido (4-10 dígitos)");
-        lblPinInfo.setStyle("-fx-text-fill: red;");
+
+        if (dpFechaAlta != null) {
+            dpFechaAlta.setValue(LocalDate.now());
+        }
+
+        if (cmbRol != null) {
+            cmbRol.setValue(Rol.TRABAJADOR);
+        }
+
+        if (lblPinInfo != null) {
+            lblPinInfo.setText("* PIN requerido (4-10 dígitos)");
+            lblPinInfo.setStyle("-fx-text-fill: red;");
+        }
     }
 
     public void inicializarEditar(Trabajador trabajador) {
         this.trabajadorEditar = trabajador;
 
         configurarComponentes();
-        txtNumeroTarjeta.setText(trabajador.getNumeroTarjeta());
-        txtNombre.setText(trabajador.getNombre());
-        txtApellidos.setText(trabajador.getApellidos());
-        txtEmail.setText(trabajador.getEmail());
-        cmbRol.setValue(trabajador.getRol());
-        dpFechaAlta.setValue(trabajador.getFechaAlta());
 
-        lblPinInfo.setText("Dejar vacío para mantener el PIN actual");
-        lblPinInfo.setStyle("-fx-text-fill: gray;");
+        if (txtNumeroTarjeta != null) {
+            txtNumeroTarjeta.setText(trabajador.getNumeroTarjeta());
+        }
+
+        if (txtNombre != null) {
+            txtNombre.setText(trabajador.getNombre());
+        }
+
+        if (txtApellidos != null) {
+            txtApellidos.setText(trabajador.getApellidos());
+        }
+
+        if (txtEmail != null) {
+            txtEmail.setText(trabajador.getEmail() != null ? trabajador.getEmail() : "");
+        }
+
+        if (cmbRol != null) {
+            cmbRol.setValue(trabajador.getRol());
+        }
+
+        if (dpFechaAlta != null) {
+            dpFechaAlta.setValue(trabajador.getFechaAlta());
+        }
+
+        if (lblPinInfo != null) {
+            lblPinInfo.setText("Dejar vacío para mantener el PIN actual");
+            lblPinInfo.setStyle("-fx-text-fill: gray;");
+        }
     }
 
     private void configurarComponentes() {
-        cmbRol.getItems().setAll(Rol.values());
-        dpFechaAlta.setValue(LocalDate.now());
+        if (cmbRol != null) {
+            cmbRol.getItems().setAll(Rol.values());
+        }
 
-        txtNumeroTarjeta.setTextFormatter(crearLimitador(20));
-        txtPin.setTextFormatter(crearLimitador(10));
-        txtPinConfirmar.setTextFormatter(crearLimitador(10));
-        txtNombre.setTextFormatter(crearLimitador(50));
-        txtApellidos.setTextFormatter(crearLimitador(100));
-        txtEmail.setTextFormatter(crearLimitador(100));
+        if (dpFechaAlta != null) {
+            dpFechaAlta.setValue(LocalDate.now());
+        }
+
+        if (txtNumeroTarjeta != null) {
+            txtNumeroTarjeta.setTextFormatter(crearLimitador(20));
+        }
+
+        if (txtPin != null) {
+            txtPin.setTextFormatter(crearLimitador(10));
+        }
+
+        if (txtPinConfirmar != null) {
+            txtPinConfirmar.setTextFormatter(crearLimitador(10));
+        }
+
+        if (txtNombre != null) {
+            txtNombre.setTextFormatter(crearLimitador(50));
+        }
+
+        if (txtApellidos != null) {
+            txtApellidos.setTextFormatter(crearLimitador(100));
+        }
+
+        if (txtEmail != null) {
+            txtEmail.setTextFormatter(crearLimitador(100));
+        }
     }
 
     private TextFormatter<String> crearLimitador(int maxLength) {
@@ -74,12 +125,35 @@ public class DialogoTrabajadorController {
         });
     }
 
+    /**
+     * Obtiene el texto de un TextField de forma segura
+     */
+    private String obtenerTexto(TextField campo) {
+        if (campo == null || campo.getText() == null) {
+            return "";
+        }
+        return campo.getText().trim();
+    }
+
+    /**
+     * Obtiene el texto de un PasswordField de forma segura
+     */
+    private String obtenerTexto(PasswordField campo) {
+        if (campo == null || campo.getText() == null) {
+            return "";
+        }
+        return campo.getText().trim();
+    }
+
     private boolean validarCampos() {
-        String numeroTarjeta = txtNumeroTarjeta.getText().trim();
+        // Validar número de tarjeta
+        String numeroTarjeta = obtenerTexto(txtNumeroTarjeta);
         if (!ValidadorUtil.esNumeroTarjetaValido(numeroTarjeta)) {
             AlertasUtil.mostrarError("Error", "Número de tarjeta inválido (4-20 dígitos)");
             return false;
         }
+
+        // Verificar si el número de tarjeta ya existe
         boolean tarjetaDuplicada = trabajadorEditar == null
                 ? trabajadorDAO.existeNumeroTarjeta(numeroTarjeta)
                 : trabajadorDAO.existeNumeroTarjetaExcluyendo(numeroTarjeta, trabajadorEditar.getId());
@@ -88,8 +162,10 @@ public class DialogoTrabajadorController {
             AlertasUtil.mostrarError("Error", "Ya existe un trabajador con ese número de tarjeta");
             return false;
         }
-        String pin = txtPin.getText().trim();
-        String pinConfirmar = txtPinConfirmar.getText().trim();
+
+        // Validar PIN
+        String pin = obtenerTexto(txtPin);
+        String pinConfirmar = obtenerTexto(txtPinConfirmar);
         boolean pinRequerido = trabajadorEditar == null;
 
         if (pinRequerido && pin.isEmpty()) {
@@ -108,28 +184,35 @@ public class DialogoTrabajadorController {
             }
         }
 
-        if (!ValidadorUtil.esNombreValido(txtNombre.getText().trim())) {
+        // Validar nombre
+        String nombre = obtenerTexto(txtNombre);
+        if (!ValidadorUtil.esNombreValido(nombre)) {
             AlertasUtil.mostrarError("Error", "Nombre inválido");
             return false;
         }
 
-        if (!ValidadorUtil.esNombreValido(txtApellidos.getText().trim())) {
+        // Validar apellidos
+        String apellidos = obtenerTexto(txtApellidos);
+        if (!ValidadorUtil.esNombreValido(apellidos)) {
             AlertasUtil.mostrarError("Error", "Apellidos inválidos");
             return false;
         }
 
-        String email = txtEmail.getText().trim();
+        // Validar email (opcional)
+        String email = obtenerTexto(txtEmail);
         if (!email.isEmpty() && !ValidadorUtil.esEmailValido(email)) {
             AlertasUtil.mostrarError("Error", "Email inválido");
             return false;
         }
 
-        if (cmbRol.getValue() == null) {
+        // Validar rol
+        if (cmbRol == null || cmbRol.getValue() == null) {
             AlertasUtil.mostrarError("Error", "Debe seleccionar un rol");
             return false;
         }
 
-        if (dpFechaAlta.getValue() == null) {
+        // Validar fecha de alta
+        if (dpFechaAlta == null || dpFechaAlta.getValue() == null) {
             AlertasUtil.mostrarError("Error", "Debe seleccionar la fecha de alta");
             return false;
         }
@@ -149,16 +232,19 @@ public class DialogoTrabajadorController {
         }
 
         try {
-            String pin = txtPin.getText().trim();
+            String pin = obtenerTexto(txtPin);
 
             if (trabajadorEditar == null) {
-                // CREAR
+                // CREAR NUEVO TRABAJADOR
                 Trabajador nuevo = new Trabajador();
-                nuevo.setNumeroTarjeta(txtNumeroTarjeta.getText().trim());
+                nuevo.setNumeroTarjeta(obtenerTexto(txtNumeroTarjeta));
                 nuevo.setPin(pin); // Guardar PIN en texto plano
-                nuevo.setNombre(txtNombre.getText().trim());
-                nuevo.setApellidos(txtApellidos.getText().trim());
-                nuevo.setEmail(txtEmail.getText().trim().isEmpty() ? null : txtEmail.getText().trim());
+                nuevo.setNombre(obtenerTexto(txtNombre));
+                nuevo.setApellidos(obtenerTexto(txtApellidos));
+
+                String email = obtenerTexto(txtEmail);
+                nuevo.setEmail(email.isEmpty() ? null : email);
+
                 nuevo.setRol(cmbRol.getValue());
                 nuevo.setFechaAlta(dpFechaAlta.getValue());
 
@@ -169,16 +255,20 @@ public class DialogoTrabajadorController {
                     AlertasUtil.mostrarError("Error", "No se pudo guardar");
                 }
             } else {
-                // EDITAR
-                trabajadorEditar.setNumeroTarjeta(txtNumeroTarjeta.getText().trim());
+                // EDITAR TRABAJADOR EXISTENTE
+                trabajadorEditar.setNumeroTarjeta(obtenerTexto(txtNumeroTarjeta));
 
+                // Solo actualizar PIN si se ingresó uno nuevo
                 if (!pin.isEmpty()) {
                     trabajadorEditar.setPin(pin);
                 }
 
-                trabajadorEditar.setNombre(txtNombre.getText().trim());
-                trabajadorEditar.setApellidos(txtApellidos.getText().trim());
-                trabajadorEditar.setEmail(txtEmail.getText().trim().isEmpty() ? null : txtEmail.getText().trim());
+                trabajadorEditar.setNombre(obtenerTexto(txtNombre));
+                trabajadorEditar.setApellidos(obtenerTexto(txtApellidos));
+
+                String email = obtenerTexto(txtEmail);
+                trabajadorEditar.setEmail(email.isEmpty() ? null : email);
+
                 trabajadorEditar.setRol(cmbRol.getValue());
                 trabajadorEditar.setFechaAlta(dpFechaAlta.getValue());
 
@@ -190,6 +280,8 @@ public class DialogoTrabajadorController {
                 }
             }
         } catch (Exception e) {
+            System.err.println("Error al guardar trabajador: " + e.getMessage());
+            e.printStackTrace();
             AlertasUtil.mostrarError("Error", "Error al guardar: " + e.getMessage());
         }
     }

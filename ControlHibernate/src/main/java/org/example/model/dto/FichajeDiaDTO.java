@@ -7,6 +7,7 @@ public class FichajeDiaDTO {
 
     public static final int MAX_PARES_ENTRADA_SALIDA = 5;
 
+    private Integer trabajadorId;  // ✨ NUEVO CAMPO
     private LocalDate fecha;
 
     private LocalTime entrada1;
@@ -30,11 +31,13 @@ public class FichajeDiaDTO {
 
     public FichajeDiaDTO() {
     }
+
     public FichajeDiaDTO(LocalDate fecha, Double horasTotales, String estado) {
         this.fecha = fecha;
         this.horasTotales = horasTotales;
         this.estado = estado;
     }
+
     public FichajeDiaDTO(LocalDate fecha, String nombreEmpleado, String numeroTarjeta,
                          Double horasTotales, String estado) {
         this.fecha = fecha;
@@ -42,6 +45,15 @@ public class FichajeDiaDTO {
         this.numeroTarjeta = numeroTarjeta;
         this.horasTotales = horasTotales;
         this.estado = estado;
+    }
+
+    // ✨ NUEVO: Getter y Setter para trabajadorId
+    public Integer getTrabajadorId() {
+        return trabajadorId;
+    }
+
+    public void setTrabajadorId(Integer trabajadorId) {
+        this.trabajadorId = trabajadorId;
     }
 
     public LocalDate getFecha() {
@@ -183,8 +195,10 @@ public class FichajeDiaDTO {
     @Override
     public String toString() {
         return "FichajeDiaDTO{" +
-                "fecha=" + fecha +
+                "trabajadorId=" + trabajadorId +
+                ", fecha=" + fecha +
                 ", nombreEmpleado='" + nombreEmpleado + '\'' +
+                ", numeroTarjeta='" + numeroTarjeta + '\'' +
                 ", horasTotales=" + horasTotales +
                 ", estado='" + estado + '\'' +
                 '}';

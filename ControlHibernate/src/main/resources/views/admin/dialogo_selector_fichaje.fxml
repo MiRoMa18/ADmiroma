@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.controller.admin.DialogoSelectorFichajeController"
+      spacing="20"
+      style="-fx-background-color: #ecf0f1; -fx-padding: 25;">
+
+    <!-- Título -->
+    <Label text="📋 Seleccionar Fichaje"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <Separator/>
+
+    <!-- Instrucción -->
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color: #fff3cd; -fx-padding: 12; -fx-background-radius: 5; -fx-border-color: #ffc107; -fx-border-radius: 5; -fx-border-width: 1;">
+        <Label fx:id="lblInstruccion"
+               text="Selecciona el fichaje que deseas modificar:"
+               wrapText="true"
+               style="-fx-text-fill: #856404; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <!-- Tabla de fichajes -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS"
+          style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8;">
+        
+        <Label text="Fichajes del día:"
+               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+        <TableView fx:id="tableFichajes" prefHeight="300" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                <TableColumn fx:id="colFechaHora" text="Hora" prefWidth="100"/>
+                <TableColumn fx:id="colTipo" text="Tipo" prefWidth="100"/>
+                <TableColumn fx:id="colClima" text="Clima" prefWidth="150"/>
+                <TableColumn fx:id="colNotas" text="Notas" prefWidth="200"/>
+            </columns>
+        </TableView>
+
+        <Label text="💡 Haz clic en una fila para seleccionarla"
+               style="-fx-font-size: 11px; -fx-text-fill: #95a5a6; -fx-font-style: italic;"/>
+    </VBox>
+
+    <!-- Botones -->
+    <HBox spacing="15" alignment="CENTER">
+        <Button fx:id="btnSeleccionar"
+                text="✅ Seleccionar"
+                onAction="#handleSeleccionar"
+                defaultButton="true"
+                prefWidth="150"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 12 25; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+        <Button fx:id="btnCancelar"
+                text="❌ Cancelar"
+                onAction="#handleCancelar"
+                cancelButton="true"
+                prefWidth="150"
+                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 12 25; -fx-cursor: hand;"/>
+    </HBox>
+
+</VBox>

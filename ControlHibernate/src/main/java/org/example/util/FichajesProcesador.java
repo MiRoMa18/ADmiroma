@@ -35,6 +35,7 @@ public class FichajesProcesador {
                         TreeMap::new,
                         Collectors.toList()
                 ));
+
         List<FichajeDiaDTO> resultado = new ArrayList<>();
 
         for (Map.Entry<ClaveEmpleadoDia, List<Fichaje>> entry : fichajesPorEmpleadoYDia.entrySet()) {
@@ -57,6 +58,7 @@ public class FichajesProcesador {
 
         FichajeDiaDTO dto = new FichajeDiaDTO();
         dto.setFecha(fecha);
+
         List<LocalTime> entradas = new ArrayList<>();
         List<LocalTime> salidas = new ArrayList<>();
         List<String> notas = new ArrayList<>();
@@ -81,15 +83,22 @@ public class FichajesProcesador {
         }
 
         asignarHorarios(dto, entradas, salidas);
+
         double horasTotales = calcularHorasTotales(entradas, salidas);
         dto.setHorasTotales(horasTotales);
+
         String estado = entradas.size() == salidas.size() ? "✅ Completo" : "⚠️ Incompleto";
         dto.setEstado(estado);
+
         dto.setNotas(String.join("; ", notas));
         dto.setClima(obtenerClimaMasComun(climas));
 
+        // ✨ IMPORTANTE: Establecer el trabajadorId SIEMPRE (no solo cuando incluirDatosEmpleado)
         if (!fichajes.isEmpty()) {
             Trabajador t = fichajes.get(0).getTrabajador();
+
+            // ✨ NUEVO: Establecer el trabajadorId en el DTO
+            dto.setTrabajadorId(t.getId());
 
             if (incluirDatosEmpleado) {
                 dto.setNombreEmpleado(t.getNombreCompleto());
@@ -113,7 +122,14 @@ public class FichajesProcesador {
 
         if (entradas.size() > 2) dto.setEntrada3(entradas.get(2));
         if (salidas.size() > 2) dto.setSalida3(salidas.get(2));
+
+        if (entradas.size() > 3) dto.setEntrada4(entradas.get(3));
+        if (salidas.size() > 3) dto.setSalida4(salidas.get(3));
+
+        if (entradas.size() > 4) dto.setEntrada5(entradas.get(4));
+        if (salidas.size() > 4) dto.setSalida5(salidas.get(4));
     }
+
     private static double calcularHorasTotales(
             List<LocalTime> entradas,
             List<LocalTime> salidas) {
@@ -173,13 +189,16 @@ public class FichajesProcesador {
         return incompletos;
     }
 
+    /**
+     * Clase interna para agrupar fichajes por empleado y día
+     */
     private static class ClaveEmpleadoDia implements Comparable<ClaveEmpleadoDia> {
         private final LocalDate fecha;
-        private final Integer empleadoId;
+        private final Integer trabajadorId;
 
-        public ClaveEmpleadoDia(LocalDate fecha, Integer empleadoId) {
+        public ClaveEmpleadoDia(LocalDate fecha, Integer trabajadorId) {
             this.fecha = fecha;
-            this.empleadoId = empleadoId;
+            this.trabajadorId = trabajadorId;
         }
 
         @Override
@@ -188,26 +207,21 @@ public class FichajesProcesador {
             if (o == null || getClass() != o.getClass()) return false;
             ClaveEmpleadoDia that = (ClaveEmpleadoDia) o;
             return Objects.equals(fecha, that.fecha) &&
-                    Objects.equals(empleadoId, that.empleadoId);
+                    Objects.equals(trabajadorId, that.trabajadorId);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(fecha, empleadoId);
+            return Objects.hash(fecha, trabajadorId);
         }
 
         @Override
-        public int compareTo(ClaveEmpleadoDia other) {
-            int fechaComp = other.fecha.compareTo(this.fecha);
-            if (fechaComp != 0) {
-                return fechaComp;
+        public int compareTo(ClaveEmpleadoDia otro) {
+            int comparacionFecha = this.fecha.compareTo(otro.fecha);
+            if (comparacionFecha != 0) {
+                return comparacionFecha;
             }
-            return this.empleadoId.compareTo(other.empleadoId);
-        }
-
-        @Override
-        public String toString() {
-            return "ClaveEmpleadoDia{fecha=" + fecha + ", empleadoId=" + empleadoId + "}";
+            return this.trabajadorId.compareTo(otro.trabajadorId);
         }
     }
 }
