@@ -3,10 +3,6 @@ package org.example.util;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-/**
- * Utilidad para formatear y calcular horas de trabajo.
- * Convierte entre formatos decimales (8.92) y legibles (8h 55m).
- */
 public class HorasFormateador {
 
     private HorasFormateador() {
@@ -14,12 +10,6 @@ public class HorasFormateador {
         throw new UnsupportedOperationException("Clase de utilidad");
     }
 
-    /**
-     * Convierte horas decimales a formato legible "Xh Ym".
-     *
-     * @param horas Horas en formato decimal (ej: 8.92 = 8 horas 55 minutos)
-     * @return String formateado (ej: "8h 55m")
-     */
     public static String formatearHoras(Double horas) {
         if (horas == null || horas == 0.0) {
             return "0h 0m";
@@ -37,12 +27,6 @@ public class HorasFormateador {
         return horasEnteras + "h " + minutos + "m";
     }
 
-    /**
-     * Formatea horas con un decimal (para promedios y estadísticas).
-     *
-     * @param horas Horas en formato decimal
-     * @return String formateado (ej: "8.5h")
-     */
     public static String formatearHorasDecimal(Double horas) {
         if (horas == null || horas == 0.0) {
             return "0.0h";
@@ -50,13 +34,6 @@ public class HorasFormateador {
         return String.format("%.1fh", horas);
     }
 
-    /**
-     * Calcula las horas entre dos momentos.
-     *
-     * @param inicio Momento de inicio
-     * @param fin Momento de fin
-     * @return Horas en formato decimal
-     */
     public static double calcularHoras(LocalDateTime inicio, LocalDateTime fin) {
         if (inicio == null || fin == null) {
             return 0.0;
@@ -66,12 +43,6 @@ public class HorasFormateador {
         return duracion.toMinutes() / 60.0;
     }
 
-    /**
-     * Convierte String de horas (ej: "8h 55m") a decimal.
-     *
-     * @param horasString String en formato "Xh Ym"
-     * @return Horas en formato decimal
-     */
     public static double parsearHoras(String horasString) {
         if (horasString == null || horasString.isEmpty()) {
             return 0.0;
@@ -90,12 +61,6 @@ public class HorasFormateador {
         }
     }
 
-    /**
-     * Valida si un valor de horas es razonable (0-24h por día).
-     *
-     * @param horas Horas a validar
-     * @return true si está en rango válido
-     */
     public static boolean esHorasValidas(Double horas) {
         return horas != null && horas >= 0 && horas <= 24;
     }

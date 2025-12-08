@@ -4,93 +4,86 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.controller.trabajador.MisFichajesController"
-            style="-fx-background-color: #ecf0f1;">
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.controller.trabajador.MisFichajesController"
+      spacing="15"
+      style="-fx-padding: 20;">
 
-    <!-- Header -->
-    <top>
-        <VBox spacing="15" style="-fx-background-color: #34495e; -fx-padding: 20;">
+    <!-- TÍTULO -->
+    <Label text="📅 MIS FICHAJES" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-            <!-- Título -->
-            <Label text="📅 Mis Fichajes"
-                   style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+    <Separator/>
 
-            <!-- Filtros -->
-            <HBox spacing="15" alignment="CENTER_LEFT">
-                <Label text="Filtrar por:" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+    <!-- FILTROS Y EXPORTACIÓN -->
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <!-- Filtro de período -->
+        <Label text="Período:" style="-fx-font-weight: bold;"/>
+        <ComboBox fx:id="cbFiltro" prefWidth="150"/>
 
-                <ComboBox fx:id="cbFiltro" prefWidth="120" style="-fx-font-size: 14px;"/>
+        <!-- Fecha inicio (para PERSONALIZADO) -->
+        <Label fx:id="lblFechaInicio" text="Desde:" style="-fx-font-weight: bold;" visible="false" managed="false"/>
+        <DatePicker fx:id="dpFechaInicio" prefWidth="150" visible="false" managed="false"/>
 
-                <Label text="Fecha:" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+        <!-- Fecha fin (para PERSONALIZADO) -->
+        <Label fx:id="lblFechaFin" text="Hasta:" style="-fx-font-weight: bold;" visible="false" managed="false"/>
+        <DatePicker fx:id="dpFechaFin" prefWidth="150" visible="false" managed="false"/>
 
-                <DatePicker fx:id="dpFecha" prefWidth="150" style="-fx-font-size: 14px;"/>
+        <Button fx:id="btnBuscar" text="🔍 Buscar" onAction="#handleBuscar"
+                style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand;"/>
 
-                <Button fx:id="btnBuscar"
-                        text="🔍 Buscar"
-                        onAction="#handleBuscar"
-                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
-            </HBox>
+        <Region HBox.hgrow="ALWAYS"/>
 
-            <!-- Estadísticas -->
-            <HBox spacing="30" alignment="CENTER_LEFT" style="-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 10;">
-                <VBox spacing="5">
-                    <Label text="Total Período" style="-fx-text-fill: #bdc3c7; -fx-font-size: 12px;"/>
-                    <Label fx:id="lblTotalPeriodo" text="0h" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
-                </VBox>
+        <!-- Botones de exportación -->
+        <Button fx:id="btnExportarExcel" text="📊 Exportar Excel"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
 
-                <Separator orientation="VERTICAL"/>
+        <Button fx:id="btnExportarPDF" text="📄 Exportar PDF"
+                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
 
-                <VBox spacing="5">
-                    <Label text="Promedio Diario" style="-fx-text-fill: #bdc3c7; -fx-font-size: 12px;"/>
-                    <Label fx:id="lblPromedioDiario" text="0h" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
-                </VBox>
+        <Button fx:id="btnVolver" text="↩ Volver" onAction="#handleVolver"
+                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 20; -fx-cursor: hand;"/>
+    </HBox>
 
-                <Separator orientation="VERTICAL"/>
+    <Separator/>
 
-                <VBox spacing="5">
-                    <Label text="Días Trabajados" style="-fx-text-fill: #bdc3c7; -fx-font-size: 12px;"/>
-                    <Label fx:id="lblDiasTrabajados" text="0 días" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
-                </VBox>
-            </HBox>
-
+    <!-- ESTADÍSTICAS -->
+    <HBox spacing="30" style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+        <VBox spacing="5" alignment="CENTER">
+            <Label text="Total Período" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+            <Label fx:id="lblTotalPeriodo" text="0h 0m" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
         </VBox>
-    </top>
 
-    <!-- Tabla de fichajes -->
-    <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: white;">
-            <TableView fx:id="tableFichajes" style="-fx-background-color: white;">
-                <columns>
-                    <TableColumn fx:id="colFecha" text="Fecha" prefWidth="100"/>
-                    <TableColumn fx:id="colEntrada1" text="Entrada" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colSalida1" text="Salida" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colEntrada2" text="Entrada" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colSalida2" text="Salida" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colEntrada3" text="Entrada" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colSalida3" text="Salida" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colEntrada4" text="Entrada" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colSalida4" text="Salida" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colEntrada5" text="Entrada" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colSalida5" text="Salida" prefWidth="70" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colNotas" text="Notas" prefWidth="150"/>
-                    <TableColumn fx:id="colClima" text="Clima" prefWidth="100"/>
-                    <TableColumn fx:id="colHorasTotales" text="Total Horas" prefWidth="90" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colEstado" text="Estado" prefWidth="100" style="-fx-alignment: CENTER;"/>
-                </columns>
-            </TableView>
-        </ScrollPane>
-    </center>
+        <Separator orientation="VERTICAL"/>
 
-    <!-- Footer -->
-    <bottom>
-        <HBox alignment="CENTER" style="-fx-background-color: #34495e; -fx-padding: 15;">
-            <Button fx:id="btnVolver"
-                    text="⬅️ Volver al Dashboard"
-                    onAction="#handleVolver"
-                    style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 12 30; -fx-cursor: hand; -fx-font-weight: bold;"/>
-        </HBox>
-    </bottom>
+        <VBox spacing="5" alignment="CENTER">
+            <Label text="Promedio Diario" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+            <Label fx:id="lblPromedioDiario" text="0.00h" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #16a085;"/>
+        </VBox>
 
-</BorderPane>
+        <Separator orientation="VERTICAL"/>
+
+        <VBox spacing="5" alignment="CENTER">
+            <Label text="Días Trabajados" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d;"/>
+            <Label fx:id="lblDiasTrabajados" text="0 días" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2980b9;"/>
+        </VBox>
+    </HBox>
+
+    <!-- TABLA -->
+    <TableView fx:id="tableFichajes" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colFecha" text="Fecha" prefWidth="100"/>
+            <TableColumn fx:id="colEntrada1" text="Entrada 1" prefWidth="80"/>
+            <TableColumn fx:id="colSalida1" text="Salida 1" prefWidth="80"/>
+            <TableColumn fx:id="colEntrada2" text="Entrada 2" prefWidth="80"/>
+            <TableColumn fx:id="colSalida2" text="Salida 2" prefWidth="80"/>
+            <TableColumn fx:id="colEntrada3" text="Entrada 3" prefWidth="80"/>
+            <TableColumn fx:id="colSalida3" text="Salida 3" prefWidth="80"/>
+            <TableColumn fx:id="colHorasTotales" text="Total" prefWidth="80"/>
+            <TableColumn fx:id="colEstado" text="Estado" prefWidth="100"/>
+            <TableColumn fx:id="colClima" text="Clima" prefWidth="80"/>
+            <TableColumn fx:id="colNotas" text="Notas" prefWidth="200"/>
+        </columns>
+    </TableView>
+
+</VBox>

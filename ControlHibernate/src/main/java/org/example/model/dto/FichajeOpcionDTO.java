@@ -1,16 +1,10 @@
 package org.example.model.dto;
 
-/**
- * DTO para mostrar opciones de fichajes en diálogos de selección.
- * Usado cuando hay múltiples fichajes en un mismo día y el usuario
- * debe elegir cuál editar/eliminar.
- */
 public class FichajeOpcionDTO {
 
     private Integer fichajeId;
-    private String descripcion; // Ej: "08:30 - ENTRADA (Soleado)"
+    private String descripcion;
 
-    // Constructores
     public FichajeOpcionDTO() {
     }
 
@@ -19,7 +13,6 @@ public class FichajeOpcionDTO {
         this.descripcion = descripcion;
     }
 
-    // Getters y Setters
     public Integer getFichajeId() {
         return fichajeId;
     }
@@ -38,6 +31,6 @@ public class FichajeOpcionDTO {
 
     @Override
     public String toString() {
-        return descripcion; // Para mostrar en ComboBox
+        return descripcion;
     }
 }

@@ -15,10 +15,8 @@
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/dao/FichajeDAO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/dao/TrabajadorDAO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/EstadisticaEmpleadoDTO.java
-/Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/FichajeDetalleDTO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/FichajeDiaDTO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/FichajeOpcionDTO.java
-/Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/FichajeTablaDTO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/estadisticas/EstadisticaDiaDTO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/estadisticas/EstadisticaMesDTO.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/dto/estadisticas/EstadisticaSemanaDTO.java
@@ -28,8 +26,10 @@
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/model/enums/TipoFichaje.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/service/ClimaService.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/AlertasUtil.java
+/Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/ExcelExportador.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/FichajesProcesador.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/HorasFormateador.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/NavegacionUtil.java
+/Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/PDFExportador.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/SeguridadUtil.java
 /Users/miquelroca/Desktop/ADMiRoMa/ControlHibernate/src/main/java/org/example/util/ValidadorUtil.java

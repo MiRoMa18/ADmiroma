@@ -5,10 +5,6 @@ import org.example.model.enums.Rol;
 
 import java.time.LocalDate;
 
-/**
- * Entidad que representa un trabajador en el sistema.
- * Puede tener rol de ADMIN o TRABAJADOR.
- */
 @Entity
 @Table(name = "trabajador")
 public class Trabajador {
@@ -39,10 +35,8 @@ public class Trabajador {
     @Column(name = "fecha_alta")
     private LocalDate fechaAlta;
 
-    // Constructores
     public Trabajador() {
     }
-
     public Trabajador(String numeroTarjeta, String pin, String nombre, String apellidos,
                       String email, Rol rol, LocalDate fechaAlta) {
         this.numeroTarjeta = numeroTarjeta;
@@ -54,7 +48,6 @@ public class Trabajador {
         this.fechaAlta = fechaAlta;
     }
 
-    // Getters y Setters
     public Integer getId() {
         return id;
     }
@@ -119,7 +112,6 @@ public class Trabajador {
         this.fechaAlta = fechaAlta;
     }
 
-    // Métodos de utilidad
     public String getNombreCompleto() {
         return nombre + " " + apellidos;
     }

@@ -4,37 +4,34 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import org.example.dao.FichajeDAO;
 import org.example.model.dto.FichajeDiaDTO;
 import org.example.model.entity.Fichaje;
 import org.example.model.entity.Trabajador;
-import org.example.util.AlertasUtil;
-import org.example.util.FichajesProcesador;
-import org.example.util.HorasFormateador;
-import org.example.util.NavegacionUtil;
+import org.example.util.*;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-/**
- * Controlador Mis Fichajes (TRABAJADOR).
- * CORREGIDO: Usa cbFiltro y dpFecha en lugar de dpFechaInicio/dpFechaFin.
- */
 public class MisFichajesController {
 
-    // FILTROS
-    @FXML private ComboBox<String> cbFiltro;  // ← CORREGIDO (era dpFechaInicio/dpFechaFin)
-    @FXML private DatePicker dpFecha;         // ← CORREGIDO (un solo DatePicker)
+    @FXML private ComboBox<String> cbFiltro;
+    @FXML private Label lblFechaInicio;
+    @FXML private DatePicker dpFechaInicio;
+    @FXML private Label lblFechaFin;
+    @FXML private DatePicker dpFechaFin;
     @FXML private Button btnBuscar;
     @FXML private Button btnVolver;
+    @FXML private Button btnExportarExcel;
+    @FXML private Button btnExportarPDF;
 
-    // ESTADÍSTICAS
-    @FXML private Label lblTotalPeriodo;      // ← CORREGIDO (era lblTotalHoras)
+    @FXML private Label lblTotalPeriodo;
     @FXML private Label lblPromedioDiario;
-    @FXML private Label lblDiasTrabajados;    // ← CORREGIDO (era lblTotalDias)
+    @FXML private Label lblDiasTrabajados;
 
-    // TABLA
     @FXML private TableView<FichajeDiaDTO> tableFichajes;
     @FXML private TableColumn<FichajeDiaDTO, LocalDate> colFecha;
     @FXML private TableColumn<FichajeDiaDTO, LocalTime> colEntrada1;
@@ -53,10 +50,18 @@ public class MisFichajesController {
 
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
-        System.out.println("📅 MisFichajesController inicializado para: " + trabajador.getNombreCompleto());
 
         configurarTabla();
-        configurarFiltros();  // ← NUEVO
+        configurarFiltros();
+
+        if (btnExportarExcel != null) {
+            btnExportarExcel.setOnAction(e -> exportarExcel());
+        }
+
+        if (btnExportarPDF != null) {
+            btnExportarPDF.setOnAction(e -> exportarPDF());
+        }
+
         cargarFichajes();
     }
 
@@ -90,9 +95,6 @@ public class MisFichajesController {
         }
     }
 
-    /**
-     * NUEVO: Configura ComboBox de filtros y DatePicker.
-     */
     private void configurarFiltros() {
         if (cbFiltro == null) {
             System.out.println("⚠️ cbFiltro no disponible");
@@ -108,38 +110,49 @@ public class MisFichajesController {
                 "PERSONALIZADO"
         );
 
-        cbFiltro.setValue("HOY");  // Por defecto: hoy
+        cbFiltro.setValue("HOY");
 
-        // Listener para cambios en el filtro
         cbFiltro.valueProperty().addListener((obs, old, nuevo) -> {
             if (nuevo != null) {
                 if (nuevo.equals("PERSONALIZADO")) {
-                    // Habilitar DatePicker
-                    if (dpFecha != null) {
-                        dpFecha.setDisable(false);
-                        dpFecha.setValue(LocalDate.now());
-                    }
+                    // Mostrar DatePickers de rango
+                    mostrarDatePickers(true);
                 } else {
-                    // Deshabilitar DatePicker
-                    if (dpFecha != null) dpFecha.setDisable(true);
-                    // Cargar automáticamente
+                    // Ocultar DatePickers
+                    mostrarDatePickers(false);
                     cargarFichajes();
                 }
             }
         });
 
-        // Configurar DatePicker (deshabilitado por defecto)
-        if (dpFecha != null) {
-            dpFecha.setValue(LocalDate.now());
-            dpFecha.setDisable(true);
+        if (dpFechaInicio != null) {
+            dpFechaInicio.setValue(LocalDate.now());
+        }
+        if (dpFechaFin != null) {
+            dpFechaFin.setValue(LocalDate.now());
         }
 
-        System.out.println("✅ Filtros configurados");
+        mostrarDatePickers(false);
+    }
+    private void mostrarDatePickers(boolean mostrar) {
+        if (lblFechaInicio != null) {
+            lblFechaInicio.setVisible(mostrar);
+            lblFechaInicio.setManaged(mostrar);
+        }
+        if (dpFechaInicio != null) {
+            dpFechaInicio.setVisible(mostrar);
+            dpFechaInicio.setManaged(mostrar);
+        }
+        if (lblFechaFin != null) {
+            lblFechaFin.setVisible(mostrar);
+            lblFechaFin.setManaged(mostrar);
+        }
+        if (dpFechaFin != null) {
+            dpFechaFin.setVisible(mostrar);
+            dpFechaFin.setManaged(mostrar);
+        }
     }
 
-    /**
-     * ACTUALIZADO: Carga fichajes según el filtro seleccionado.
-     */
     private void cargarFichajes() {
         if (cbFiltro == null) {
             System.out.println("⚠️ cbFiltro no disponible");
@@ -156,7 +169,6 @@ public class MisFichajesController {
         LocalDate fin;
         LocalDate hoy = LocalDate.now();
 
-        // Calcular rango según filtro
         switch (filtro) {
             case "HOY":
                 inicio = hoy;
@@ -164,8 +176,8 @@ public class MisFichajesController {
                 break;
 
             case "ESTA SEMANA":
-                inicio = hoy.minusDays(hoy.getDayOfWeek().getValue() - 1);  // Lunes
-                fin = inicio.plusDays(6);  // Domingo
+                inicio = hoy.minusDays(hoy.getDayOfWeek().getValue() - 1);
+                fin = inicio.plusDays(6);
                 break;
 
             case "ESTE MES":
@@ -180,12 +192,18 @@ public class MisFichajesController {
                 break;
 
             case "PERSONALIZADO":
-                if (dpFecha == null || dpFecha.getValue() == null) {
-                    AlertasUtil.mostrarError("Error", "Seleccione una fecha");
+                if (dpFechaInicio == null || dpFechaInicio.getValue() == null ||
+                        dpFechaFin == null || dpFechaFin.getValue() == null) {
+                    AlertasUtil.mostrarError("Error", "Seleccione ambas fechas");
                     return;
                 }
-                inicio = dpFecha.getValue();
-                fin = dpFecha.getValue();
+                inicio = dpFechaInicio.getValue();
+                fin = dpFechaFin.getValue();
+
+                if (inicio.isAfter(fin)) {
+                    AlertasUtil.mostrarError("Error", "La fecha de inicio debe ser anterior o igual a la fecha de fin");
+                    return;
+                }
                 break;
 
             default:
@@ -193,34 +211,23 @@ public class MisFichajesController {
                 fin = hoy;
         }
 
-        System.out.println("📅 Cargando fichajes:");
-        System.out.println("   Filtro: " + filtro);
-        System.out.println("   Rango: " + inicio + " - " + fin);
-
         try {
-            // Obtener fichajes
             List<Fichaje> fichajes = fichajeDAO.buscarPorTrabajadorYRango(
                     trabajadorActual.getId(),
                     inicio,
                     fin
             );
 
-            // Agrupar por día
             List<FichajeDiaDTO> fichajesPorDia = FichajesProcesador.agruparFichajesPorDia(
                     fichajes,
-                    false  // No incluir datos de empleado
+                    false
             );
 
-            // Mostrar en tabla
             if (tableFichajes != null) {
                 tableFichajes.setItems(FXCollections.observableArrayList(fichajesPorDia));
             }
 
-            // Calcular estadísticas
             calcularEstadisticas(fichajesPorDia, fichajes);
-
-            System.out.println("✅ Fichajes cargados: " + fichajesPorDia.size() + " días");
-
         } catch (Exception e) {
             System.err.println("💥 ERROR: " + e.getMessage());
             e.printStackTrace();
@@ -228,9 +235,6 @@ public class MisFichajesController {
         }
     }
 
-    /**
-     * Calcula y muestra estadísticas.
-     */
     private void calcularEstadisticas(List<FichajeDiaDTO> fichajesPorDia, List<Fichaje> fichajesRaw) {
         int totalDias = fichajesPorDia.size();
 
@@ -240,7 +244,6 @@ public class MisFichajesController {
 
         double promedioDiario = totalDias > 0 ? totalHoras / totalDias : 0.0;
 
-        // Actualizar labels
         if (lblTotalPeriodo != null) {
             lblTotalPeriodo.setText(HorasFormateador.formatearHoras(totalHoras));
         }
@@ -252,21 +255,141 @@ public class MisFichajesController {
         if (lblDiasTrabajados != null) {
             lblDiasTrabajados.setText(totalDias + " días");
         }
-
-        System.out.println("📊 Estadísticas:");
-        System.out.println("   Días: " + totalDias);
-        System.out.println("   Total: " + HorasFormateador.formatearHoras(totalHoras));
-        System.out.println("   Promedio: " + HorasFormateador.formatearHorasDecimal(promedioDiario));
     }
 
     @FXML
     private void handleBuscar() {
-        System.out.println("🔍 Búsqueda manual");
         cargarFichajes();
     }
 
     @FXML
     private void handleVolver() {
         NavegacionUtil.abrirDashboard(btnVolver, trabajadorActual);
+    }
+
+    private void exportarExcel() {
+        if (tableFichajes == null || tableFichajes.getItems().isEmpty()) {
+            AlertasUtil.mostrarError("Error", "No hay datos para exportar");
+            return;
+        }
+
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Guardar archivo Excel");
+            fileChooser.setInitialFileName("fichajes_" + LocalDate.now() + ".xlsx");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Archivos Excel", "*.xlsx")
+            );
+
+            File archivo = fileChooser.showSaveDialog(btnExportarExcel.getScene().getWindow());
+
+            if (archivo != null) {
+                List<FichajeDiaDTO> fichajes = tableFichajes.getItems();
+                LocalDate fechaInicio = obtenerFechaInicio();
+                LocalDate fechaFin = obtenerFechaFin();
+
+                // Exportar
+                boolean exito = ExcelExportador.exportar(
+                        fichajes,
+                        archivo,
+                        trabajadorActual.getNombreCompleto(),
+                        fechaInicio,
+                        fechaFin
+                );
+
+                if (exito) {
+                    AlertasUtil.mostrarExito("Éxito",
+                            "Excel generado correctamente en:\n" + archivo.getAbsolutePath());
+                } else {
+                    AlertasUtil.mostrarError("Error", "No se pudo generar el Excel");
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("💥 ERROR al exportar Excel: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "Error al exportar: " + e.getMessage());
+        }
+    }
+
+    private void exportarPDF() {
+        if (tableFichajes == null || tableFichajes.getItems().isEmpty()) {
+            AlertasUtil.mostrarError("Error", "No hay datos para exportar");
+            return;
+        }
+
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Guardar archivo PDF");
+            fileChooser.setInitialFileName("fichajes_" + LocalDate.now() + ".pdf");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf")
+            );
+
+            File archivo = fileChooser.showSaveDialog(btnExportarPDF.getScene().getWindow());
+
+            if (archivo != null) {
+                List<FichajeDiaDTO> fichajes = tableFichajes.getItems();
+
+                LocalDate fechaInicio = obtenerFechaInicio();
+                LocalDate fechaFin = obtenerFechaFin();
+
+                boolean exito = PDFExportador.exportar(
+                        fichajes,
+                        archivo,
+                        trabajadorActual.getNombreCompleto(),
+                        fechaInicio,
+                        fechaFin
+                );
+
+                if (exito) {
+                    AlertasUtil.mostrarExito("Éxito",
+                            "PDF generado correctamente en:\n" + archivo.getAbsolutePath());
+                } else {
+                    AlertasUtil.mostrarError("Error", "No se pudo generar el PDF");
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("💥 ERROR al exportar PDF: " + e.getMessage());
+            e.printStackTrace();
+            AlertasUtil.mostrarError("Error", "Error al exportar: " + e.getMessage());
+        }
+    }
+
+    private LocalDate obtenerFechaInicio() {
+        String filtro = cbFiltro != null ? cbFiltro.getValue() : "HOY";
+        LocalDate hoy = LocalDate.now();
+
+        switch (filtro) {
+            case "ESTA SEMANA":
+                return hoy.minusDays(hoy.getDayOfWeek().getValue() - 1);
+            case "ESTE MES":
+                return hoy.withDayOfMonth(1);
+            case "MES PASADO":
+                return hoy.minusMonths(1).withDayOfMonth(1);
+            case "PERSONALIZADO":
+                return dpFechaInicio != null && dpFechaInicio.getValue() != null ? dpFechaInicio.getValue() : hoy;
+            default:
+                return hoy;
+        }
+    }
+    private LocalDate obtenerFechaFin() {
+        String filtro = cbFiltro != null ? cbFiltro.getValue() : "HOY";
+        LocalDate hoy = LocalDate.now();
+
+        switch (filtro) {
+            case "ESTA SEMANA":
+                return hoy.minusDays(hoy.getDayOfWeek().getValue() - 1).plusDays(6);
+            case "ESTE MES":
+                return hoy.withDayOfMonth(hoy.lengthOfMonth());
+            case "MES PASADO":
+                LocalDate primerDiaMesPasado = hoy.minusMonths(1).withDayOfMonth(1);
+                return primerDiaMesPasado.withDayOfMonth(primerDiaMesPasado.lengthOfMonth());
+            case "PERSONALIZADO":
+                return dpFechaFin != null && dpFechaFin.getValue() != null ? dpFechaFin.getValue() : hoy;
+            default: // "HOY"
+                return hoy;
+        }
     }
 }

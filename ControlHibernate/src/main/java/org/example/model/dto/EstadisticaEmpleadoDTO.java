@@ -1,8 +1,6 @@
 package org.example.model.dto;
 
-/**
- * DTO para estadísticas de un empleado en el panel de administrador.
- */
+
 public class EstadisticaEmpleadoDTO {
 
     private Integer empleadoId;
@@ -12,12 +10,10 @@ public class EstadisticaEmpleadoDTO {
     private Double totalHoras;
     private Double promedioDiario;
     private Integer fichajesIncompletos;
-    private String estado; // "✅ Normal", "⚠️ Bajo", "❌ Muy Bajo"
+    private String estado;
 
-    // Constructores
     public EstadisticaEmpleadoDTO() {
     }
-
     public EstadisticaEmpleadoDTO(Integer empleadoId, String nombreCompleto, String numeroTarjeta,
                                   Integer diasTrabajados, Double totalHoras, Double promedioDiario,
                                   Integer fichajesIncompletos, String estado) {
@@ -31,7 +27,6 @@ public class EstadisticaEmpleadoDTO {
         this.estado = estado;
     }
 
-    // Getters y Setters
     public Integer getEmpleadoId() {
         return empleadoId;
     }

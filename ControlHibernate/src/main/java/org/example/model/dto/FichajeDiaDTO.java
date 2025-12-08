@@ -3,17 +3,12 @@ package org.example.model.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/**
- * DTO para mostrar todos los fichajes de UN DÍA en una sola fila de tabla.
- * Soporta hasta 5 pares de ENTRADA/SALIDA por día.
- */
 public class FichajeDiaDTO {
 
     public static final int MAX_PARES_ENTRADA_SALIDA = 5;
 
     private LocalDate fecha;
 
-    // Hasta 5 pares de entrada/salida
     private LocalTime entrada1;
     private LocalTime salida1;
     private LocalTime entrada2;
@@ -25,25 +20,21 @@ public class FichajeDiaDTO {
     private LocalTime entrada5;
     private LocalTime salida5;
 
-    private String notas;          // Concatenación de todas las notas del día
-    private String clima;          // Clima más común del día
-    private Double horasTotales;   // Total de horas trabajadas
-    private String estado;         // "✅ Completo" o "⚠️ Incompleto"
+    private String notas;
+    private String clima;
+    private Double horasTotales;
+    private String estado;
 
-    // Para uso del ADMIN (campos adicionales)
     private String nombreEmpleado;
     private String numeroTarjeta;
 
-    // Constructores
     public FichajeDiaDTO() {
     }
-
     public FichajeDiaDTO(LocalDate fecha, Double horasTotales, String estado) {
         this.fecha = fecha;
         this.horasTotales = horasTotales;
         this.estado = estado;
     }
-
     public FichajeDiaDTO(LocalDate fecha, String nombreEmpleado, String numeroTarjeta,
                          Double horasTotales, String estado) {
         this.fecha = fecha;
@@ -53,7 +44,6 @@ public class FichajeDiaDTO {
         this.estado = estado;
     }
 
-    // Getters y Setters
     public LocalDate getFecha() {
         return fecha;
     }

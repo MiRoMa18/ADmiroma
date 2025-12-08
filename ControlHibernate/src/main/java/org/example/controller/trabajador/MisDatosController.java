@@ -37,9 +37,6 @@ public class MisDatosController {
 
     private Trabajador trabajadorActual;
 
-    /**
-     * Inicializar la vista con los datos del trabajador
-     */
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
 
@@ -50,29 +47,23 @@ public class MisDatosController {
         lblEmail.setText(trabajador.getEmail() != null ? trabajador.getEmail() : "No especificado");
         lblRol.setText(trabajador.getRol().toString());
 
-        // Formatear fecha
         if (trabajador.getFechaAlta() != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             lblFechaAlta.setText(trabajador.getFechaAlta().format(formatter));
         } else {
             lblFechaAlta.setText("No especificada");
         }
-
-        System.out.println("✅ Vista 'Mis Datos' cargada para: " + trabajador.getNombre());
     }
 
     @FXML
     private void handleVolver() {
-        System.out.println("🔙 Volviendo al dashboard...");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
             Parent root = loader.load();
 
-            // Pasar trabajador al dashboard
             org.example.controller.DashboardController controller = loader.getController();
             controller.inicializar(trabajadorActual);
 
-            // Cambiar escena
             Stage stage = (Stage) btnVolver.getScene().getWindow();
             stage.setScene(new Scene(root, 800, 600));
             stage.setTitle("Control Horario - Dashboard");

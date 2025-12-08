@@ -1,19 +1,14 @@
 package org.example.model.dto.estadisticas;
 
-/**
- * DTO para estadísticas de un día en la vista de trabajador.
- */
 public class EstadisticaDiaDTO {
 
-    private String fecha;      // Formato: "dd/MM/yyyy"
-    private String diaSemana;  // Ej: "Lunes"
-    private Double horas;      // Horas trabajadas
-    private String estado;     // "✅ Completo", "⚠️ Incompleto"
+    private String fecha;
+    private String diaSemana;
+    private Double horas;
+    private String estado;
 
-    // Constructores
     public EstadisticaDiaDTO() {
     }
-
     public EstadisticaDiaDTO(String fecha, String diaSemana, Double horas, String estado) {
         this.fecha = fecha;
         this.diaSemana = diaSemana;
@@ -21,7 +16,6 @@ public class EstadisticaDiaDTO {
         this.estado = estado;
     }
 
-    // Getters y Setters
     public String getFecha() {
         return fecha;
     }

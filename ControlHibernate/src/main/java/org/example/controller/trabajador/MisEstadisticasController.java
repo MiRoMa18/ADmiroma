@@ -22,30 +22,22 @@ import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controlador Mis Estadísticas (TRABAJADOR).
- * CORREGIDO: Sin horas negativas + gráfico funcional primera vez.
- */
 public class MisEstadisticasController {
 
-    // FILTROS
     @FXML private ComboBox<String> cbMes;
     @FXML private ComboBox<Integer> cbAnio;
     @FXML private Button btnBuscar;
     @FXML private Button btnVolver;
 
-    // TAB MENSUAL - Labels
     @FXML private Label lblMensualTotal;
     @FXML private Label lblMensualPromedio;
     @FXML private Label lblMensualDias;
     @FXML private Label lblMensualMax;
 
-    // TAB MENSUAL - Gráfico
     @FXML private BarChart<String, Number> chartMensualBarras;
     @FXML private CategoryAxis xAxisMensual;
     @FXML private NumberAxis yAxisMensual;
 
-    // TAB MENSUAL - Tabla
     @FXML private TableView<DiaEstadistica> tableMensual;
     @FXML private TableColumn<DiaEstadistica, String> colDiaFecha;
     @FXML private TableColumn<DiaEstadistica, String> colDiaSemana;
@@ -57,7 +49,6 @@ public class MisEstadisticasController {
 
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
-        System.out.println("📊 MisEstadisticasController inicializado para: " + trabajador.getNombreCompleto());
 
         configurarTabla();
         configurarMeses();
@@ -103,8 +94,6 @@ public class MisEstadisticasController {
 
         int mesActual = LocalDate.now().getMonthValue();
         cbMes.setValue(cbMes.getItems().get(mesActual - 1));
-
-        System.out.println("✅ ComboBox meses configurado");
     }
 
     private void configurarAnios() {
@@ -122,8 +111,6 @@ public class MisEstadisticasController {
         }
 
         cbAnio.setValue(anioActual);
-
-        System.out.println("✅ ComboBox años configurado");
     }
 
     private void cargarEstadisticas() {
@@ -144,12 +131,6 @@ public class MisEstadisticasController {
 
         LocalDate primerDia = LocalDate.of(anioSeleccionado, numeroMes, 1);
         LocalDate ultimoDia = primerDia.withDayOfMonth(primerDia.lengthOfMonth());
-
-        System.out.println("📊 Cargando estadísticas:");
-        System.out.println("   Mes: " + mesSeleccionado + " (" + numeroMes + ")");
-        System.out.println("   Año: " + anioSeleccionado);
-        System.out.println("   Rango: " + primerDia + " - " + ultimoDia);
-
         try {
             List<Fichaje> fichajes = fichajeDAO.buscarPorTrabajadorYRango(
                     trabajadorActual.getId(),
@@ -157,20 +138,10 @@ public class MisEstadisticasController {
                     ultimoDia
             );
 
-            // Calcular estadísticas por día (CORREGIDO)
             Map<LocalDate, Double> horasPorDia = calcularHorasPorDiaCorregido(fichajes);
-
-            // Actualizar labels
             actualizarLabels(horasPorDia);
-
-            // Actualizar gráfico (CORREGIDO)
             actualizarGraficoCorregido(horasPorDia);
-
-            // Actualizar tabla
             actualizarTabla(horasPorDia, fichajes);
-
-            System.out.println("✅ Estadísticas cargadas");
-
         } catch (Exception e) {
             System.err.println("💥 ERROR: " + e.getMessage());
             e.printStackTrace();
@@ -178,9 +149,6 @@ public class MisEstadisticasController {
         }
     }
 
-    /**
-     * CORREGIDO: Calcula horas por día sin valores negativos.
-     */
     private Map<LocalDate, Double> calcularHorasPorDiaCorregido(List<Fichaje> fichajes) {
         Map<LocalDate, List<Fichaje>> porDia = fichajes.stream()
                 .collect(Collectors.groupingBy(f -> f.getFechaHora().toLocalDate()));
@@ -190,13 +158,9 @@ public class MisEstadisticasController {
         for (Map.Entry<LocalDate, List<Fichaje>> entry : porDia.entrySet()) {
             List<Fichaje> fichajesDia = entry.getValue();
 
-            // CRÍTICO: Ordenar por hora ANTES de separar
             fichajesDia.sort(Comparator.comparing(Fichaje::getFechaHora));
-
-            // Separar entradas y salidas YA ORDENADAS
             List<Fichaje> entradas = new ArrayList<>();
             List<Fichaje> salidas = new ArrayList<>();
-
             for (Fichaje f : fichajesDia) {
                 if (f.getTipo() == TipoFichaje.ENTRADA) {
                     entradas.add(f);
@@ -213,18 +177,10 @@ public class MisEstadisticasController {
                         entradas.get(i).getFechaHora(),
                         salidas.get(i).getFechaHora()
                 );
-
-                // VALIDACIÓN: Solo sumar si es positivo
                 if (horas >= 0) {
                     horasDia += horas;
-                } else {
-                    System.out.println("   ⚠️ Horas negativas en " + entry.getKey() +
-                            ": " + entradas.get(i).getFechaHora().toLocalTime() +
-                            " - " + salidas.get(i).getFechaHora().toLocalTime() +
-                            " (ignorado)");
                 }
             }
-
             horasPorDia.put(entry.getKey(), horasDia);
         }
 
@@ -252,35 +208,17 @@ public class MisEstadisticasController {
         if (lblMensualMax != null) {
             lblMensualMax.setText(HorasFormateador.formatearHoras(diaMaximo));
         }
-
-        System.out.println("📊 Resumen:");
-        System.out.println("   Total: " + HorasFormateador.formatearHoras(totalHoras));
-        System.out.println("   Días: " + diasTrabajados);
-        System.out.println("   Promedio: " + HorasFormateador.formatearHorasDecimal(promedioDiario));
-        System.out.println("   Máximo: " + HorasFormateador.formatearHoras(diaMaximo));
     }
-
-    /**
-     * CORREGIDO: Actualiza gráfico correctamente la primera vez.
-     */
     private void actualizarGraficoCorregido(Map<LocalDate, Double> horasPorDia) {
         if (chartMensualBarras == null) {
             System.out.println("⚠️ Gráfico no disponible");
             return;
         }
 
-        // CRÍTICO: Limpiar COMPLETAMENTE el gráfico
         chartMensualBarras.getData().clear();
-
-        // CRÍTICO: Forzar layout para que JavaFX actualice el eje X
         chartMensualBarras.layout();
-
-        // Crear nueva serie
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Horas");
-
-        System.out.println("📈 Actualizando gráfico con " + horasPorDia.size() + " días");
-
         // Ordenar por fecha y agregar al gráfico
         horasPorDia.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
@@ -291,13 +229,8 @@ public class MisEstadisticasController {
                     System.out.println("   - " + fecha + ": " + HorasFormateador.formatearHoras(horas));
                 });
 
-        // Agregar serie al gráfico
         chartMensualBarras.getData().add(series);
-
-        // CRÍTICO: Forzar un segundo layout después de agregar datos
         chartMensualBarras.layout();
-
-        System.out.println("✅ Gráfico actualizado correctamente");
     }
 
     private void actualizarTabla(Map<LocalDate, Double> horasPorDia, List<Fichaje> fichajes) {
@@ -309,7 +242,6 @@ public class MisEstadisticasController {
             LocalDate fecha = entry.getKey();
             Double horas = entry.getValue();
 
-            // Verificar si el día está incompleto
             long entradas = fichajes.stream()
                     .filter(f -> f.getFechaHora().toLocalDate().equals(fecha))
                     .filter(f -> f.getTipo() == TipoFichaje.ENTRADA)
@@ -333,13 +265,9 @@ public class MisEstadisticasController {
                     estado
             ));
         }
-
-        // Ordenar por fecha descendente
         estadisticas.sort((a, b) -> b.fecha.compareTo(a.fecha));
 
         tableMensual.setItems(FXCollections.observableArrayList(estadisticas));
-
-        System.out.println("📋 Tabla actualizada con " + estadisticas.size() + " filas");
     }
 
     @FXML
@@ -353,9 +281,6 @@ public class MisEstadisticasController {
         NavegacionUtil.abrirDashboard(btnVolver, trabajadorActual);
     }
 
-    /**
-     * Clase interna para representar estadísticas de un día.
-     */
     public static class DiaEstadistica {
         private final String fecha;
         private final String diaSemana;

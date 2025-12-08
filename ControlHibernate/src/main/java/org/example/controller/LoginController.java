@@ -13,10 +13,6 @@ import org.example.util.ValidadorUtil;
 
 import java.util.Optional;
 
-/**
- * Controlador para la vista de login.
- * Autentica trabajadores mediante número de tarjeta y PIN.
- */
 public class LoginController {
 
     @FXML
@@ -30,25 +26,16 @@ public class LoginController {
 
     private final TrabajadorDAO trabajadorDAO = new TrabajadorDAO();
 
-    /**
-     * Inicializa el controlador.
-     * Configura listeners y valores por defecto.
-     */
     @FXML
     public void initialize() {
         System.out.println("🔐 LoginController inicializado");
 
-        // Enter en cualquier campo = hacer login
         txtNumeroTarjeta.setOnAction(event -> handleLogin());
         txtPin.setOnAction(event -> handleLogin());
 
-        // Focus automático en número de tarjeta
         txtNumeroTarjeta.requestFocus();
     }
 
-    /**
-     * Maneja el evento de click en el botón Login.
-     */
     @FXML
     private void handleLogin() {
         System.out.println("🔐 Intento de login");
@@ -56,7 +43,6 @@ public class LoginController {
         String numeroTarjeta = txtNumeroTarjeta.getText().trim();
         String pin = txtPin.getText().trim();
 
-        // Validar campos vacíos
         if (numeroTarjeta.isEmpty() || pin.isEmpty()) {
             AlertasUtil.mostrarError(
                     "Campos incompletos",
@@ -65,7 +51,6 @@ public class LoginController {
             return;
         }
 
-        // Validar formato de número de tarjeta
         if (!ValidadorUtil.esNumeroTarjetaValido(numeroTarjeta)) {
             AlertasUtil.mostrarError(
                     "Número de tarjeta inválido",
@@ -74,7 +59,6 @@ public class LoginController {
             return;
         }
 
-        // Validar formato de PIN
         if (!ValidadorUtil.esPinValido(pin)) {
             AlertasUtil.mostrarError(
                     "PIN inválido",
@@ -83,38 +67,25 @@ public class LoginController {
             return;
         }
 
-        // Autenticar
         Optional<Trabajador> trabajadorOpt = trabajadorDAO.autenticar(numeroTarjeta, pin);
 
         if (trabajadorOpt.isPresent()) {
             Trabajador trabajador = trabajadorOpt.get();
 
-            System.out.println("✅ Login exitoso: " + trabajador.getNombreCompleto());
-
-            // Navegar al dashboard
             NavegacionUtil.abrirDashboard(btnLogin, trabajador);
-
         } else {
-            System.out.println("❌ Login fallido");
-
             AlertasUtil.mostrarError(
                     "Autenticación fallida",
                     "Número de tarjeta o PIN incorrectos"
             );
 
-            // Limpiar campos
             txtPin.clear();
             txtNumeroTarjeta.requestFocus();
         }
     }
 
-    /**
-     * Maneja el evento de click en "Salir".
-     */
     @FXML
     private void handleSalir() {
-        System.out.println("🚪 Cerrando aplicación...");
-
         boolean confirmar = AlertasUtil.confirmarAccion(
                 "Salir",
                 "¿Está seguro que desea salir?"

@@ -51,6 +51,12 @@
                                 text="🧹 Limpiar"
                                 onAction="#handleLimpiar"
                                 style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 8 20; -fx-cursor: hand;"/>
+                        <Button fx:id="btnExportarExcel"
+                                text="📊 Exportar Excel"
+                                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
+                        <Button fx:id="btnExportarPDF"
+                                text="📄 Exportar PDF"
+                                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-weight: bold;"/>
                     </HBox>
                 </VBox>
 

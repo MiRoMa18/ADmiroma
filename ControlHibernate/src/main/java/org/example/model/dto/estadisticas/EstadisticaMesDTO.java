@@ -1,21 +1,16 @@
 package org.example.model.dto.estadisticas;
 
-/**
- * DTO para estadísticas de un mes en la vista de trabajador.
- */
 public class EstadisticaMesDTO {
 
-    private String mes;             // Nombre del mes (Ej: "Enero")
-    private Integer anio;           // Año
-    private Integer diasTrabajados; // Días trabajados en el mes
-    private Double totalHoras;      // Total de horas trabajadas
-    private Double promedio;        // Promedio diario
-    private Integer fichajesIncompletos; // Días con fichaje incompleto
+    private String mes;
+    private Integer anio;
+    private Integer diasTrabajados;
+    private Double totalHoras;
+    private Double promedio;
+    private Integer fichajesIncompletos;
 
-    // Constructores
     public EstadisticaMesDTO() {
     }
-
     public EstadisticaMesDTO(String mes, Integer anio, Integer diasTrabajados,
                              Double totalHoras, Double promedio, Integer fichajesIncompletos) {
         this.mes = mes;
@@ -26,7 +21,6 @@ public class EstadisticaMesDTO {
         this.fichajesIncompletos = fichajesIncompletos;
     }
 
-    // Getters y Setters
     public String getMes() {
         return mes;
     }

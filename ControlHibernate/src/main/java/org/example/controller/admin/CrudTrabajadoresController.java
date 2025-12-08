@@ -20,26 +20,18 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Controlador para el CRUD de trabajadores (ADMIN).
- * CORREGIDO: Nombres coinciden con crud_trabajadores.fxml
- */
 public class CrudTrabajadoresController {
-
-    // FILTROS
     @FXML private TextField txtBuscar;
-    @FXML private ComboBox<String> cbRol;  // ← AGREGADO (no existía en controlador)
+    @FXML private ComboBox<String> cbRol;
     @FXML private Button btnBuscar;
     @FXML private Button btnLimpiar;
 
-    // BOTONES
     @FXML private Button btnNuevo;
     @FXML private Button btnEditar;
     @FXML private Button btnEliminar;
     @FXML private Button btnVolver;
     @FXML private Button btnRefrescar;
 
-    // TABLA
     @FXML private TableView<Trabajador> tableTrabajadores;
     @FXML private TableColumn<Trabajador, Integer> colId;
     @FXML private TableColumn<Trabajador, String> colNumeroTarjeta;
@@ -57,10 +49,8 @@ public class CrudTrabajadoresController {
 
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
-        System.out.println("👥 CrudTrabajadoresController inicializado");
-
         configurarTabla();
-        configurarRolCombo();  // ← NUEVO
+        configurarRolCombo();
         cargarTrabajadores();
         configurarBusqueda();
 
@@ -77,7 +67,6 @@ public class CrudTrabajadoresController {
         if (colRol != null) colRol.setCellValueFactory(new PropertyValueFactory<>("rol"));
         if (colFechaAlta != null) colFechaAlta.setCellValueFactory(new PropertyValueFactory<>("fechaAlta"));
 
-        // Color para roles
         if (colRol != null) {
             colRol.setCellFactory(column -> new TableCell<>() {
                 @Override
@@ -109,9 +98,6 @@ public class CrudTrabajadoresController {
         }
     }
 
-    /**
-     * NUEVO: Configura cbRol con opciones TODOS/ADMIN/TRABAJADOR.
-     */
     private void configurarRolCombo() {
         if (cbRol == null) {
             System.out.println("⚠️ cbRol no disponible");
@@ -122,10 +108,7 @@ public class CrudTrabajadoresController {
         cbRol.getItems().addAll("TODOS", "ADMIN", "TRABAJADOR");
         cbRol.setValue("TODOS");
 
-        // Listener para filtrar al cambiar
         cbRol.valueProperty().addListener((obs, old, nuevo) -> filtrarTrabajadores(txtBuscar.getText()));
-
-        System.out.println("✅ ComboBox rol configurado");
     }
 
     private void cargarTrabajadores() {
@@ -139,9 +122,6 @@ public class CrudTrabajadoresController {
             if (lblTotalTrabajadores != null) {
                 lblTotalTrabajadores.setText("Total: " + trabajadores.size());
             }
-
-            System.out.println("✅ Trabajadores cargados: " + trabajadores.size());
-
         } catch (Exception e) {
             System.err.println("💥 ERROR: " + e.getMessage());
             e.printStackTrace();
@@ -171,7 +151,6 @@ public class CrudTrabajadoresController {
         try {
             List<Trabajador> todos = trabajadorDAO.obtenerTodos();
 
-            // Filtrar por texto
             if (texto == null) texto = "";
             String busqueda = texto.toLowerCase();
 
@@ -184,7 +163,6 @@ public class CrudTrabajadoresController {
                     )
                     .toList();
 
-            // Filtrar por rol (si cbRol existe)
             if (cbRol != null && cbRol.getValue() != null && !cbRol.getValue().equals("TODOS")) {
                 Rol rolSeleccionado = Rol.valueOf(cbRol.getValue());
                 filtrados = filtrados.stream()

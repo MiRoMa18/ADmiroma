@@ -1,20 +1,15 @@
 package org.example.model.dto.estadisticas;
 
-/**
- * DTO para estadísticas de una semana en la vista de trabajador.
- */
 public class EstadisticaSemanaDTO {
 
-    private Integer numeroSemana;   // Número de semana del año (1-52)
-    private String rangoFechas;     // Ej: "01/01 - 07/01"
-    private Integer diasTrabajados; // Días trabajados en la semana
-    private Double totalHoras;      // Total de horas trabajadas
-    private Double promedio;        // Promedio diario
+    private Integer numeroSemana;
+    private String rangoFechas;
+    private Integer diasTrabajados;
+    private Double totalHoras;
+    private Double promedio;
 
-    // Constructores
     public EstadisticaSemanaDTO() {
     }
-
     public EstadisticaSemanaDTO(Integer numeroSemana, String rangoFechas,
                                 Integer diasTrabajados, Double totalHoras, Double promedio) {
         this.numeroSemana = numeroSemana;
@@ -24,7 +19,6 @@ public class EstadisticaSemanaDTO {
         this.promedio = promedio;
     }
 
-    // Getters y Setters
     public Integer getNumeroSemana() {
         return numeroSemana;
     }

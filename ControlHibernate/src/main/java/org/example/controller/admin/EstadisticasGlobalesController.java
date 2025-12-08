@@ -24,30 +24,22 @@ import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controlador Estadísticas Globales (ADMIN).
- * CORREGIDO: Sin horas negativas + gráfico funcional primera vez.
- */
 public class EstadisticasGlobalesController {
 
-    // FILTROS
     @FXML private ComboBox<String> cbMes;
     @FXML private ComboBox<Integer> cbAnio;
     @FXML private Button btnBuscar;
     @FXML private Button btnVolver;
 
-    // LABELS DE RESUMEN
     @FXML private Label lblTotalHoras;
     @FXML private Label lblEmpleadosActivos;
     @FXML private Label lblPromedioEmpleado;
     @FXML private Label lblMejorEmpleado;
 
-    // GRÁFICO
     @FXML private BarChart<String, Number> chartComparativa;
     @FXML private CategoryAxis xAxisEmpleados;
     @FXML private NumberAxis yAxisHoras;
 
-    // TABLA
     @FXML private TableView<EstadisticaEmpleadoDTO> tableEstadisticas;
     @FXML private TableColumn<EstadisticaEmpleadoDTO, String> colNombre;
     @FXML private TableColumn<EstadisticaEmpleadoDTO, String> colTarjeta;
@@ -63,7 +55,6 @@ public class EstadisticasGlobalesController {
 
     public void inicializar(Trabajador trabajador) {
         this.trabajadorActual = trabajador;
-        System.out.println("📊 EstadisticasGlobalesController inicializado");
 
         configurarTabla();
         configurarMeses();
@@ -137,8 +128,6 @@ public class EstadisticasGlobalesController {
 
         int mesActual = LocalDate.now().getMonthValue();
         cbMes.setValue(cbMes.getItems().get(mesActual - 1));
-
-        System.out.println("✅ ComboBox meses configurado");
     }
 
     private void configurarAnios() {
@@ -156,8 +145,6 @@ public class EstadisticasGlobalesController {
         }
 
         cbAnio.setValue(anioActual);
-
-        System.out.println("✅ ComboBox años configurado");
     }
 
     private void cargarEstadisticas() {
@@ -165,7 +152,6 @@ public class EstadisticasGlobalesController {
             System.out.println("⚠️ ComboBoxes no disponibles");
             return;
         }
-
         String mesSeleccionado = cbMes.getValue();
         Integer anioSeleccionado = cbAnio.getValue();
 
@@ -173,16 +159,9 @@ public class EstadisticasGlobalesController {
             AlertasUtil.mostrarError("Error", "Seleccione mes y año");
             return;
         }
-
         int numeroMes = cbMes.getItems().indexOf(mesSeleccionado) + 1;
-
         LocalDate primerDia = LocalDate.of(anioSeleccionado, numeroMes, 1);
         LocalDate ultimoDia = primerDia.withDayOfMonth(primerDia.lengthOfMonth());
-
-        System.out.println("📊 Cargando estadísticas:");
-        System.out.println("   Mes: " + mesSeleccionado + " (" + numeroMes + ")");
-        System.out.println("   Año: " + anioSeleccionado);
-        System.out.println("   Rango: " + primerDia + " - " + ultimoDia);
 
         try {
             List<Trabajador> trabajadores = trabajadorDAO.obtenerTodos();
@@ -210,11 +189,6 @@ public class EstadisticasGlobalesController {
                     double totalHoras = calcularTotalHorasCorregido(fichajes);
                     double promedio = diasTrabajados > 0 ? totalHoras / diasTrabajados : 0.0;
                     int incompletos = contarDiasIncompletos(fichajes);
-
-                    System.out.println("   " + t.getNombreCompleto() + ": " +
-                            HorasFormateador.formatearHoras(totalHoras) +
-                            " en " + diasTrabajados + " días");
-
                     estadisticas.add(new EstadisticaEmpleadoDTO(
                             t.getId(),
                             t.getNombreCompleto(),
@@ -228,22 +202,13 @@ public class EstadisticasGlobalesController {
                 }
             }
 
-            // Ordenar por total horas descendente
             estadisticas.sort((a, b) -> Double.compare(b.getTotalHoras(), a.getTotalHoras()));
-
-            // Mostrar en tabla
             if (tableEstadisticas != null) {
                 tableEstadisticas.setItems(FXCollections.observableArrayList(estadisticas));
             }
 
-            // Actualizar resumen
             actualizarResumen(estadisticas);
-
-            // Actualizar gráfico (CORREGIDO)
             actualizarGraficoCorregido(estadisticas);
-
-            System.out.println("✅ Estadísticas cargadas: " + estadisticas.size() + " empleados");
-
         } catch (Exception e) {
             System.err.println("💥 ERROR: " + e.getMessage());
             e.printStackTrace();
@@ -251,10 +216,6 @@ public class EstadisticasGlobalesController {
         }
     }
 
-    /**
-     * CORREGIDO: Calcula horas correctamente, sin valores negativos.
-     * Empareja cada ENTRADA con la SALIDA más cercana posterior.
-     */
     private double calcularTotalHorasCorregido(List<Fichaje> fichajes) {
         Map<LocalDate, List<Fichaje>> porDia = fichajes.stream()
                 .collect(Collectors.groupingBy(f -> f.getFechaHora().toLocalDate()));
@@ -263,11 +224,7 @@ public class EstadisticasGlobalesController {
 
         for (Map.Entry<LocalDate, List<Fichaje>> entry : porDia.entrySet()) {
             List<Fichaje> fichajesDia = entry.getValue();
-
-            // CRÍTICO: Ordenar por hora ANTES de separar
             fichajesDia.sort(Comparator.comparing(Fichaje::getFechaHora));
-
-            // Separar entradas y salidas YA ORDENADAS
             List<Fichaje> entradas = new ArrayList<>();
             List<Fichaje> salidas = new ArrayList<>();
 
@@ -279,24 +236,14 @@ public class EstadisticasGlobalesController {
                 }
             }
 
-            // Emparejar: cada entrada con la salida más cercana
             int pares = Math.min(entradas.size(), salidas.size());
-
             for (int i = 0; i < pares; i++) {
                 double horas = HorasFormateador.calcularHoras(
                         entradas.get(i).getFechaHora(),
                         salidas.get(i).getFechaHora()
                 );
-
-                // VALIDACIÓN: Solo sumar si es positivo
                 if (horas >= 0) {
                     totalHoras += horas;
-                } else {
-                    System.out.println("   ⚠️ Horas negativas detectadas en " +
-                            entry.getKey() + ": " +
-                            entradas.get(i).getFechaHora().toLocalTime() + " - " +
-                            salidas.get(i).getFechaHora().toLocalTime() +
-                            " (ignorado)");
                 }
             }
         }
@@ -353,52 +300,31 @@ public class EstadisticasGlobalesController {
         if (lblMejorEmpleado != null) lblMejorEmpleado.setText(mejorEmpleado);
     }
 
-    /**
-     * CORREGIDO: Actualiza gráfico correctamente la primera vez.
-     * Solución: Limpiar completamente y forzar layout antes de agregar datos.
-     */
     private void actualizarGraficoCorregido(List<EstadisticaEmpleadoDTO> estadisticas) {
         if (chartComparativa == null) {
             System.out.println("⚠️ Gráfico no disponible");
             return;
         }
 
-        // CRÍTICO: Limpiar COMPLETAMENTE el gráfico
         chartComparativa.getData().clear();
-
-        // CRÍTICO: Forzar layout para que JavaFX actualice el eje X
         chartComparativa.layout();
-
-        // Crear nueva serie
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Horas");
-
-        // Filtrar empleados con horas > 0 y tomar Top 10
         List<EstadisticaEmpleadoDTO> top10 = estadisticas.stream()
                 .filter(e -> e.getDiasTrabajados() > 0)
                 .limit(10)
                 .collect(Collectors.toList());
 
-        System.out.println("📈 Actualizando gráfico con " + top10.size() + " empleados");
-
-        // Agregar datos al gráfico
         for (EstadisticaEmpleadoDTO e : top10) {
             series.getData().add(new XYChart.Data<>(e.getNombreCompleto(), e.getTotalHoras()));
             System.out.println("   - " + e.getNombreCompleto() + ": " + e.getTotalHoras() + "h");
         }
-
-        // Agregar serie al gráfico
         chartComparativa.getData().add(series);
-
-        // CRÍTICO: Forzar un segundo layout después de agregar datos
         chartComparativa.layout();
-
-        System.out.println("✅ Gráfico actualizado correctamente");
     }
 
     @FXML
     private void handleBuscar() {
-        System.out.println("🔍 Búsqueda manual iniciada");
         cargarEstadisticas();
     }
 

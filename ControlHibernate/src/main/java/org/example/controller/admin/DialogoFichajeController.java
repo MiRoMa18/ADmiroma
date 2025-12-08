@@ -18,9 +18,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/**
- * Controlador para el diálogo de crear/editar fichaje.
- */
 public class DialogoFichajeController {
 
     @FXML private ComboBox<Trabajador> cmbTrabajador;
@@ -41,8 +38,6 @@ public class DialogoFichajeController {
 
     public void inicializarNuevo() throws Exception {
         this.fichajeEditar = null;
-        System.out.println("➕ Modo: CREAR nuevo fichaje");
-
         configurarComponentes();
         cargarTrabajadores();
 
@@ -55,13 +50,11 @@ public class DialogoFichajeController {
 
     public void inicializarEditar(Fichaje fichaje) {
         this.fichajeEditar = fichaje;
-        System.out.println("✏️ Modo: EDITAR fichaje - ID: " + fichaje.getId());
-
         configurarComponentes();
         cargarTrabajadores();
 
         cmbTrabajador.setValue(fichaje.getTrabajador());
-        cmbTrabajador.setDisable(true); // No permitir cambiar trabajador
+        cmbTrabajador.setDisable(true);
 
         dpFecha.setValue(fichaje.getFechaHora().toLocalDate());
         txtHora.setText(fichaje.getFechaHora().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -88,7 +81,6 @@ public class DialogoFichajeController {
         try {
             List<Trabajador> trabajadores = trabajadorDAO.obtenerTodos();
             cmbTrabajador.getItems().setAll(trabajadores);
-
             cmbTrabajador.setButtonCell(new ListCell<Trabajador>() {
                 @Override
                 protected void updateItem(Trabajador item, boolean empty) {
@@ -136,7 +128,6 @@ public class DialogoFichajeController {
             return false;
         }
 
-        // Verificar que la fecha-hora no sea futura
         LocalDateTime fechaHora = LocalDateTime.of(
                 dpFecha.getValue(),
                 LocalTime.parse(hora, DateTimeFormatter.ofPattern("HH:mm"))
@@ -165,7 +156,6 @@ public class DialogoFichajeController {
         if (!validarCampos()) {
             return;
         }
-
         try {
             Trabajador trabajador = cmbTrabajador.getValue();
             LocalDate fecha = dpFecha.getValue();

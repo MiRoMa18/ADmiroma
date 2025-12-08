@@ -5,13 +5,16 @@ org/example/controller/LoginController.class
 org/example/controller/admin/CrudTrabajadoresController$1.class
 org/example/controller/admin/DialogoFichajeController$2.class
 org/example/model/dto/estadisticas/EstadisticaDiaDTO.class
+org/example/util/FichajesProcesador$ClaveEmpleadoDia.class
 org/example/controller/DashboardController.class
 org/example/model/entity/Fichaje.class
+org/example/util/ExcelExportador.class
 org/example/model/dto/estadisticas/EstadisticaSemanaDTO.class
 org/example/controller/trabajador/MisFichajesController$1.class
 org/example/model/dto/EstadisticaEmpleadoDTO.class
 org/example/controller/trabajador/MisDatosController.class
 org/example/util/SeguridadUtil.class
+org/example/util/PDFExportador.class
 org/example/util/NavegacionUtil.class
 org/example/model/enums/TipoFichaje.class
 org/example/Main.class

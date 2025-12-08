@@ -11,9 +11,6 @@ import org.example.util.ValidadorUtil;
 
 import java.time.LocalDate;
 
-/**
- * Controlador para el diálogo de crear/editar trabajador.
- */
 public class DialogoTrabajadorController {
 
     @FXML private TextField txtNumeroTarjeta;
@@ -34,8 +31,6 @@ public class DialogoTrabajadorController {
 
     public void inicializarNuevo() {
         this.trabajadorEditar = null;
-        System.out.println("➕ Modo: CREAR nuevo trabajador");
-
         configurarComponentes();
         dpFechaAlta.setValue(LocalDate.now());
         cmbRol.setValue(Rol.TRABAJADOR);
@@ -45,7 +40,6 @@ public class DialogoTrabajadorController {
 
     public void inicializarEditar(Trabajador trabajador) {
         this.trabajadorEditar = trabajador;
-        System.out.println("✏️ Modo: EDITAR - " + trabajador.getNombreCompleto());
 
         configurarComponentes();
         txtNumeroTarjeta.setText(trabajador.getNumeroTarjeta());
@@ -86,7 +80,6 @@ public class DialogoTrabajadorController {
             AlertasUtil.mostrarError("Error", "Número de tarjeta inválido (4-20 dígitos)");
             return false;
         }
-
         boolean tarjetaDuplicada = trabajadorEditar == null
                 ? trabajadorDAO.existeNumeroTarjeta(numeroTarjeta)
                 : trabajadorDAO.existeNumeroTarjetaExcluyendo(numeroTarjeta, trabajadorEditar.getId());
@@ -95,7 +88,6 @@ public class DialogoTrabajadorController {
             AlertasUtil.mostrarError("Error", "Ya existe un trabajador con ese número de tarjeta");
             return false;
         }
-
         String pin = txtPin.getText().trim();
         String pinConfirmar = txtPinConfirmar.getText().trim();
         boolean pinRequerido = trabajadorEditar == null;
@@ -181,7 +173,7 @@ public class DialogoTrabajadorController {
                 trabajadorEditar.setNumeroTarjeta(txtNumeroTarjeta.getText().trim());
 
                 if (!pin.isEmpty()) {
-                    trabajadorEditar.setPin(pin); // Guardar PIN en texto plano
+                    trabajadorEditar.setPin(pin);
                 }
 
                 trabajadorEditar.setNombre(txtNombre.getText().trim());

@@ -5,9 +5,6 @@ import org.example.model.enums.TipoFichaje;
 
 import java.time.LocalDateTime;
 
-/**
- * Entidad que representa un fichaje (entrada o salida) de un trabajador.
- */
 @Entity
 @Table(name = "fichaje")
 public class Fichaje {
@@ -33,10 +30,8 @@ public class Fichaje {
     @Column(columnDefinition = "TEXT")
     private String notas;
 
-    // Constructores
     public Fichaje() {
     }
-
     public Fichaje(Trabajador trabajador, LocalDateTime fechaHora, TipoFichaje tipo,
                    String clima, String notas) {
         this.trabajador = trabajador;
@@ -46,7 +41,6 @@ public class Fichaje {
         this.notas = notas;
     }
 
-    // Getters y Setters
     public Integer getId() {
         return id;
     }
